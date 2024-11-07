@@ -105,7 +105,7 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 
 void program::computeKineticEnergy(atom_style *ATOMS, SimBox *BOX)
 {
-	BOX->ke = 0.0;66
+	BOX->ke = 0.0;
 	BOX->etot = 0.0;
 
 	for(int i = 0; i < BOX->nAtoms; i++)

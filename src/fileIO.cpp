@@ -86,7 +86,7 @@ void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fn
     fprintf(traj, "Timestep %f\n", step);
 
     for(int i = 0; i < Input->N; i++) 
-        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
+        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry);
 
     fclose(traj);
 }
@@ -108,3 +108,35 @@ void program::writeFrame(atom_style *ATOMS, sysInput *Input, char *fname)
 
     fclose(frame);
 }
+
+void program::writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int step)
+{
+    char *fname = new char[500];
+    FILE *thermo;
+    sprintf(fname, "../Data%d/thermo%d.dat", Input->nr, runID);
+
+    if(step == 0)
+    {
+        remove(fname);
+        thermo = fopen(fname, "w");
+        if(thermo == NULL)
+        {
+            printf("Cannot create %s. Exiting...\n", fname);
+            exit(-1);
+        }
+        else fprintf(thermo, "step pe ke etot\n");
+    }
+
+    else 
+    {
+        thermo = fopen(fname, "a+");
+        if(thermo == NULL)
+        {
+            printf("Cannot open %s. File does not exist.\n", fname);
+            exit(-1);
+        }
+    }
+
+    fprintf(thermo, "%d %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac);
+    fclose(thermo);
+}   

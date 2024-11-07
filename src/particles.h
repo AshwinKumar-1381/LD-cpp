@@ -11,7 +11,8 @@ namespace program{
     
     public:
     
-    float rx, ry, rz;
+    float rx, ry;
+    float r2x, r2y;
     float px, py;
     float p2x, p2y;
     float fx, fy;

@@ -35,7 +35,8 @@ namespace program {
     void buildCellMaps();
     void buildCellList(atom_style* ATOMS);
     
-    void checkMinImage(float *dx = NULL, float *dy = NULL, float *dz = NULL); 
+    void checkMinImage(float *dx = NULL, float *dy = NULL); 
+    void checkPBC(atom_style *ATOMS);
     void setRandomConfig(atom_style *ATOMS);
     void assignMomenta(atom_style *ATOMS);
     void assignProperties(atom_style *ATOMS, sysInput *Input);

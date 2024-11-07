@@ -15,6 +15,7 @@ namespace program{
 	void writeLog(sysInput *Input);
 	void write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fname);
 	void writeFrame(atom_style *ATOMS, sysInput *Input, char *fname);
+	void writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int step);
 
 }
 

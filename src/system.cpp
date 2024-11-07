@@ -48,11 +48,9 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
     
     program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
     program::computeKineticEnergy(ATOMS, BOX);
-
-    printf("%f %f \n", pe, ke);
 }
 
-void program::SimBox::checkMinImage(float *dx, float *dy, float *dz)
+void program::SimBox::checkMinImage(float *dx, float *dy)
 {
 	if(dx != NULL)
 	{
@@ -63,6 +61,33 @@ void program::SimBox::checkMinImage(float *dx, float *dy, float *dz)
 	{
 		if(*dy >= 0.5*boxLength_y) *dy -= boxLength_y;
 		else if(*dy <= -0.5*boxLength_y) *dy += boxLength_y; 
+	}
+}
+
+void program::SimBox::checkPBC(atom_style *ATOMS)
+{
+	for(int i = 0; i < nAtoms; i++)
+	{
+		if(ATOMS[i].rx <= 0.0)
+		{
+			ATOMS[i].rx += boxLength_x;
+			ATOMS[i].jumpx -= 1;
+		}
+		else if(ATOMS[i].rx >= boxLength_x)
+		{
+			ATOMS[i].rx -= boxLength_x;
+			ATOMS[i].jumpx += 1;
+		}
+		if(ATOMS[i].ry <= 0.0)
+		{
+			ATOMS[i].ry += boxLength_y;
+			ATOMS[i].jumpy -= 1; 
+		}
+		else if(ATOMS[i].ry >= boxLength_y)
+		{
+			ATOMS[i].ry -= boxLength_y;
+			ATOMS[i].jumpy += 1;
+		}
 	}
 }
 
@@ -139,7 +164,8 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input)
 		ATOMS[i].D = 1.0;
 		ATOMS[i].m = Input->m_str;
 	}
-	printf("Assigned properties for %d atoms.\n", nAtoms);
+
+	printf("Created %d atoms of type A and %d atoms of type B\n", numA, numB);
 }
 
 void program::SimBox::assignMomenta(atom_style *ATOMS)

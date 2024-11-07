@@ -1,5 +1,8 @@
 // random.h
 
+#ifndef RANDOM_H
+#define RANDOM_H
+
 #define pi 3.141592654
 
 // Random-Number-Generators
@@ -17,7 +20,9 @@
 using namespace program;
 
 namespace program {
-    
-    void gauss();
-    void URN();
+
+    void GAUSS(float *gauss1, float *gauss2, long *idum, int num = 0);
+    void URN(float *zahl1, long *idum, int num = 0);
 }
+
+#endif /* RANDOM_H */

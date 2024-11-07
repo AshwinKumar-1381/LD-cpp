@@ -38,6 +38,7 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
     if(fname != NULL)
     {
     	program::readConfigFile(ATOMS, BOX, fname);
+    	assignProperties(ATOMS, Input);
     }
     else 
     {
@@ -48,6 +49,8 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
     
     program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
     program::computeKineticEnergy(ATOMS, BOX);
+
+    printf("%f %f\n", BOX->pe, BOX->ke);
 }
 
 void program::SimBox::checkMinImage(float *dx, float *dy)

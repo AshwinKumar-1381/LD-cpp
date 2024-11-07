@@ -5,7 +5,7 @@
 #include "fileIO.h"
 #include "run.h"
 
-//#define INIT_CONFIG_FILE "../misc/init3.xyz"
+#define INIT_CONFIG_FILE "../tests/frame0.dat"
 
 using namespace program;
 
@@ -57,7 +57,7 @@ void simulation(sysInput *Input)
     program::writeFrame(ATOMS, Input, fname);
 
     // runNVE params - runID time dt thermo_every traj_every norm 
-    runNVE *run1 = new runNVE(1, 1, 1e-5, 1000, 1000, true);
+    runNVE *run1 = new runNVE(1, 50, 1e-6, 50000, 1000, true);
     run1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
 
     delete BOX;

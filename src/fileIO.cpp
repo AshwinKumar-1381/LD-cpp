@@ -18,17 +18,18 @@ void program::readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname)
     else
     {
         fgets(pipeString, 500, initFile);
-        fgets(pipeString, 500, initFile);
         
         for(int i = 0; i < BOX->nAtoms; i++)
         {
             fgets(pipeString, 500, initFile);
-            sscanf(pipeString, "%c %f %f %*f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry);
+            sscanf(pipeString, "%c %f %f %f %f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry, &ATOMS[i].px, &ATOMS[i].py);
         }   
     }
     
     fclose(initFile);
     delete(pipeString);
+
+    printf("Read configurations for %d atoms from %s.\n", BOX->nAtoms, fname);
 }
 
 void program::makeFolder(sysInput *Input)
@@ -101,10 +102,10 @@ void program::writeFrame(atom_style *ATOMS, sysInput *Input, char *fname)
         exit(-1);
     }
 
-    fprintf(frame, "ID rx ry px py fx fy jumpx jumpy Pe\n");
+    fprintf(frame, "ID rx ry px py\n");
 
     for(int i = 0; i < Input->N; i++) 
-        fprintf(frame, "%c %f %f %f %f %f %f %d %d %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].px, ATOMS[i].py, ATOMS[i].fx, ATOMS[i].fy, ATOMS[i].jumpx, ATOMS[i].jumpy, ATOMS[i].Pe);
+        fprintf(frame, "%c %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].px, ATOMS[i].py);
 
     fclose(frame);
 }

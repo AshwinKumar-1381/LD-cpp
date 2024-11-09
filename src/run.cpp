@@ -20,7 +20,7 @@ program::runNVE::runNVE(int id, float t, float delta_t, int every1, int every2, 
 
 void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input)
 {
-	maxSteps = int(time/dt);
+	maxSteps = ceil(time/dt);
 
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
@@ -65,3 +65,5 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *I
 		program::computeKineticEnergy(ATOMS, BOX);	
 	}
 }
+
+program

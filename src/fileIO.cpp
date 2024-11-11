@@ -125,7 +125,7 @@ void program::writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int 
             printf("Cannot create %s. Exiting...\n", fname);
             exit(-1);
         }
-        else fprintf(thermo, "step pe ke etot\n");
+        else fprintf(thermo, "step pe ke etot temp\n");
     }
 
     else 
@@ -138,6 +138,6 @@ void program::writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int 
         }
     }
 
-    fprintf(thermo, "%d %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac);
+    fprintf(thermo, "%d %f %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac, BOX->temp);
     fclose(thermo);
 }   

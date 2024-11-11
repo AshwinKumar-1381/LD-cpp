@@ -16,6 +16,7 @@ namespace program{
     float px, py;
     float p2x, p2y;
     float fx, fy;
+    float bfx, bfy;
     int jumpx, jumpy;
     float m;
     float D;

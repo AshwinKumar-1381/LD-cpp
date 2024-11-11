@@ -16,12 +16,14 @@ namespace program {
     
     public:
     
+    int dim;
     int nAtoms;
     float boxLength_x;
     float boxLength_y;
     float numFrac;
     float ke, pe, etot;
     float SPx, SPy;
+    float temp;
     
     int Ncell_x, Ncell_y;
     float rcell_x, rcell_y;
@@ -37,6 +39,7 @@ namespace program {
     
     void checkMinImage(float *dx = NULL, float *dy = NULL); 
     void checkPBC(atom_style *ATOMS);
+    void getBrownianForce(atom_style *ATOMS, bool zero, int step);
     void setRandomConfig(atom_style *ATOMS);
     void assignMomenta(atom_style *ATOMS);
     void assignProperties(atom_style *ATOMS, sysInput *Input);

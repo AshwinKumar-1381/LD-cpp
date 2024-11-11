@@ -13,16 +13,16 @@ import file_utils
 
 mpl.pyplot.rc('text', usetex=True)
 
-def avg(H): return(sum(H)/len(H))
+def avg(x): return(sum(x)/len(x))
 
-option = 2
+option = 1
 
 if(option == 1):
-    nr = 24
-    runID = 1
+    nr = 1
+    runID = 2
     fpath = os.getcwd().removesuffix("/tests") + "/Data{nr}/thermo{rid}.dat" \
         .format(nr = nr,rid = runID)
-    [step, pe, ke, etot] = file_utils.readData(fpath)
+    [step, pe, ke, etot, temp] = file_utils.readData(fpath)
 
     print("# data points = ", len(etot))
     H = etot
@@ -31,6 +31,13 @@ if(option == 1):
     print("<H>^2 = ", avg(H)**2)
     print("<H2> = ",avg(H2))
     print("rms delH2 = ", m.sqrt(avg(H2) - avg(H)**2))
+    
+    T = temp
+    T2 = [i*i for i in T]
+    print("<H> = ", avg(T))
+    print("<H>^2 = ", avg(T)**2)
+    print("<H2> = ",avg(T2))
+    print("rms delH2 = ", m.sqrt(avg(T2) - avg(T)**2))
 
     fig, ax = mpl.pyplot.subplots()
     ax.semilogy(step, pe, lw = 0.7, label = "pe")
@@ -48,5 +55,4 @@ else:
     ax.loglog(dt, delH2, "o-", lw = 0.6, ms = 2)
     ax.set_xlabel(r"$dt$", fontsize = 12)
     ax.set_ylabel(r"$\sqrt{<\delta \mathcal{H}^2>}$", fontsize = 12)
-    
     

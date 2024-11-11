@@ -117,3 +117,8 @@ void program::computeKineticEnergy(atom_style *ATOMS, SimBox *BOX)
 
 	BOX->etot = BOX->pe + BOX->ke;
 }
+
+void program::computeTemperature(SimBox *BOX)
+{
+	BOX->temp = (2.0*BOX->ke)/(BOX->dim*BOX->nAtoms);
+}

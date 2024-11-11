@@ -11,8 +11,9 @@ using namespace program;
 
 namespace program{
 
-	void computeNonBondedInteractions(atom_style* ATOMS, SimBox* BOX, pair_style* INTERACTION);
-	void computeKineticEnergy(atom_style* ATOMS, SimBox* BOX);
+	void computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION);
+	void computeKineticEnergy(atom_style *ATOMS, SimBox *BOX);
+	void computeTemperature(SimBox *BOX);
 }
 
 #endif /* COMPUTE_H */

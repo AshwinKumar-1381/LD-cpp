@@ -57,8 +57,12 @@ void simulation(sysInput *Input)
     program::writeFrame(ATOMS, Input, fname);
 
     // runNVE params - runID time dt thermo_every traj_every norm 
-    runNVE *run1 = new runNVE(1, 50, 3e-5, 1666, 1000, true);
-    run1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
+    //runNVE *run1 = new runNVE(1, 50, 3e-5, 1666, 1000, true);
+    //run1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
+
+    // runLangevin params - runID time dt thermo_every traj_every norm zero
+    runLangevin *run2 = new runLangevin(2, 50, 5e-6, 10000, 100, true, true);
+    run2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
 
     delete BOX;
     delete[] ATOMS;

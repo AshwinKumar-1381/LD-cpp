@@ -8,6 +8,7 @@
 using namespace program;
 
 program::SimBox::SimBox(){
+	dim = 2;
     nAtoms = 1;
     boxLength_x = 1.0;
     boxLength_y = boxLength_x;
@@ -17,6 +18,7 @@ program::SimBox::SimBox(){
     etot = 0.0;
     SPx = 0.0;
     SPy = 0.0;
+    temp = 0.0;
     
     rcell_x = 1.122462048;
     rcell_y = rcell_x;
@@ -49,8 +51,7 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
     
     program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
     program::computeKineticEnergy(ATOMS, BOX);
-
-    printf("%f %f\n", BOX->pe, BOX->ke);
+    program::computeTemperature(BOX);
 }
 
 void program::SimBox::checkMinImage(float *dx, float *dy)
@@ -245,4 +246,38 @@ void program::SimBox::buildCellList(atom_style *ATOMS)
 		LIST[i] = HEAD[icell];
 		HEAD[icell] = i;		    
 	}	
+}
+
+void program::SimBox::getBrownianForce(atom_style *ATOMS, bool zero, int step)
+{
+	float gauss1, gauss2;
+	long idum;
+	program::GAUSS(&gauss1, &gauss2, &idum, 4 + step);
+
+	for(int i = 0; i < nAtoms; i++)
+	{
+		program::GAUSS(&gauss1, &gauss2, &idum);
+		ATOMS[i].bfx = gauss1;
+		ATOMS[i].bfy = gauss2;
+	}
+
+	if(zero == true)
+	{
+		float Sbfx = 0.0, Sbfy = 0.0;
+
+		for(int i = 0; i < nAtoms; i++)
+		{
+			Sbfx += ATOMS[i].bfx;
+			Sbfy += ATOMS[i].bfy;
+		}
+
+		Sbfx /= nAtoms;
+		Sbfy /= nAtoms;
+
+		for(int i = 0; i < nAtoms; i++)
+		{
+			ATOMS[i].bfx -= Sbfx;
+			ATOMS[i].bfy -= Sbfy; 
+		}
+	}
 }

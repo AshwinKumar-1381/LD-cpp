@@ -76,7 +76,7 @@ void program::writeLog(sysInput *Input)
 void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fname)
 {
     remove(fname);
-    FILE *traj = fopen(fname, "a+");
+    FILE *traj = fopen(fname, "w");
     if(traj == NULL)
     {
         printf("Cannot create initial trajectory file. Exiting...\n");
@@ -87,7 +87,7 @@ void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fn
     fprintf(traj, "Timestep %f\n", step);
 
     for(int i = 0; i < Input->N; i++) 
-        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry);
+        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
 
     fclose(traj);
 }
@@ -141,3 +141,39 @@ void program::writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int 
     fprintf(thermo, "%d %f %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac, BOX->temp);
     fclose(thermo);
 }   
+
+void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step)
+{
+    char *fname = new char[500];
+    FILE *traj;
+    sprintf(fname, "../Data%d/traj%d.xyz", Input->nr, runID);
+
+    if(step == 0)
+    {
+        remove(fname);
+        traj = fopen(fname, "w");
+        if(traj == NULL)
+        {
+            printf("Cannot create %s. Exiting...\n", fname);
+            exit(-1);
+        }
+    }
+
+    else
+    {
+        traj = fopen(fname, "a+");
+        if(traj == NULL)
+        {
+            printf("Cannot open %s. File does not exist.\n", fname);
+            exit(-1);
+        }
+    }
+
+    fprintf(traj, "%d\n", Input->N);
+    fprintf(traj, "Timestep %d\n", step);
+
+    for(int i = 0; i < Input -> N; i++) 
+        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
+
+    fclose(traj);
+}

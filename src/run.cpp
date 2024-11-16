@@ -15,13 +15,12 @@ program::runNVE::runNVE(int id, float t, float delta_t, int thermo_val, int traj
 	thermo_every = thermo_val;
 	traj_every = traj_val;
 	norm = norm_val;
+
 	maxSteps = ceil(time/dt);
 }
 
 void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input)
 {
-	maxSteps = ceil(time/dt);
-
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
@@ -66,7 +65,7 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *I
 	}
 }
 
-program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val)
+program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val)
 {
 	runID = id;
 	time = t;
@@ -75,13 +74,13 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	traj_every = traj_val;
 	norm = norm_val;
 	zero = zero_val;
+	kmc = kmc_val;
+
 	maxSteps = ceil(time/dt);
 }
 
-void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input)
+void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, runKMC *KMC)
 {
-	maxSteps = ceil(time/dt);
-
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
@@ -90,6 +89,7 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 	float dtm = float(dt/ATOMS[0].m);
 	float c1 = exp(-1.0*dtm);
 	float c2 = sqrt(ATOMS[0].m*(1.0-c1*c1));
+	float c3 = ATOMS[0].m*(1.0 - c1);
 
 	for(int step = 0; step <= maxSteps; step++)
 	{
@@ -105,6 +105,9 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 			program::writeThermo(BOX, Input, runID, fac, step);
 		}
 
+		if(step % traj_every == 0) 
+			program::write2traj(ATOMS, Input, runID, step);
+
 		BOX -> getBrownianForce(ATOMS, zero, step);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
@@ -117,6 +120,9 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 
 			ATOMS[i].p2x = ATOMS[i].p2x*c1 + ATOMS[i].bfx*c2;
 			ATOMS[i].p2y = ATOMS[i].p2y*c1 + ATOMS[i].bfy*c2;
+
+			if(ATOMS[i].rx <= 0.5*BOX->boxLength_x) ATOMS[i].p2x += 1.0*c3*ATOMS[i].Pe;
+			else ATOMS[i].p2x += -1.0*c3*ATOMS[i].Pe;
 
 			ATOMS[i].rx = ATOMS[i].r2x + 0.5*dtm*ATOMS[i].p2x;
 			ATOMS[i].ry = ATOMS[i].r2y + 0.5*dtm*ATOMS[i].p2y;
@@ -134,4 +140,15 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 		program::computeKineticEnergy(ATOMS, BOX);	
 		program::computeTemperature(BOX);
 	}
+}
+
+program::runKMC::runKMC(float bias_val, int kmc_every_val)
+{
+	bias = bias_val;
+	kmc_every = kmc_every_val;
+}
+
+void program::runKMC::Switch(atom_style *ATOMS)
+{
+
 }

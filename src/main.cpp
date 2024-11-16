@@ -5,7 +5,7 @@
 #include "fileIO.h"
 #include "run.h"
 
-#define INIT_CONFIG_FILE "../tests/frame0.dat"
+//#define INIT_CONFIG_FILE "../tests/frame0.dat"
 
 using namespace program;
 
@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
     Input -> PR = atof(argv[6]);
     Input -> PeA = atof(argv[7]);
     Input -> PeB = atof(argv[8]);
+    Input -> bias = atof(argv[9]);
     
     Input -> N = int(Input->pfrac*Input->L*Input->L); 
 
@@ -57,13 +58,24 @@ void simulation(sysInput *Input)
     program::writeFrame(ATOMS, Input, fname);
 
     // runNVE params - runID time dt thermo_every traj_every norm 
-    //runNVE *run1 = new runNVE(1, 50, 3e-5, 1666, 1000, true);
-    //run1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
+    //runNVE *RUN1 = new runNVE(1, 50, 3e-5, 1666, 1000, true);
+    //RUN1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
 
-    // runLangevin params - runID time dt thermo_every traj_every norm zero
-    runLangevin *run2 = new runLangevin(2, 50, 5e-6, 10000, 100, true, true);
-    run2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
+    // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
+    runLangevin *RUN2 = new runLangevin(2, 100, 5e-4, 1000, 1000, true, true, true);
+    
+    if(RUN2->kmc == true)
+    { 
+        // runKMC params - bias kmc_every
+        runKMC *KMC = new runKMC(Input->bias, 1);
+        RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input, KMC);
+        delete KMC;
+    }
+    else
+        RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
 
     delete BOX;
     delete[] ATOMS;
+    delete INTERACTION;
+    delete RUN2;
 }

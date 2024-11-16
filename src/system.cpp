@@ -142,17 +142,16 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input)
 	{
 		int accept = 0;
 		program::URN(&zahl1, &idum);
-		if(numA < nAtoms-int(Input->PR*nAtoms))
+		
+		if((numA < nAtoms-int(Input->PR*nAtoms)) and (zahl1 < Input->PR or numB >= int(Input->PR*nAtoms)))
 		{
-			if(zahl1 < Input->PR or numB >= int(Input->PR*nAtoms))
-			{
-				ATOMS[i].id = 'N';
-				ATOMS[i].Pe = Input->PeA;
-				numA++;
-				accept = 1;
-			}
+			ATOMS[i].id = 'N';
+			ATOMS[i].Pe = Input->PeA;
+			numA++;
+			accept = 1;
 		}
-		else if(numB < int(Input->PR*nAtoms))
+
+		else
 		{
 			ATOMS[i].id = 'O';
 			ATOMS[i].Pe = Input->PeB;
@@ -271,13 +270,10 @@ void program::SimBox::getBrownianForce(atom_style *ATOMS, bool zero, int step)
 			Sbfy += ATOMS[i].bfy;
 		}
 
-		Sbfx /= nAtoms;
-		Sbfy /= nAtoms;
-
 		for(int i = 0; i < nAtoms; i++)
 		{
-			ATOMS[i].bfx -= Sbfx;
-			ATOMS[i].bfy -= Sbfy; 
+			ATOMS[i].bfx -= (Sbfx/nAtoms);
+			ATOMS[i].bfy -= (Sbfy/nAtoms); 
 		}
 	}
 }

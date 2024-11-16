@@ -28,6 +28,20 @@ namespace program{
 		void integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input); 
 	};
 
+	class runKMC{
+
+		public:
+
+		float bias;
+		int kmc_every;
+		int numAB, numBA;
+
+		runKMC(float bias_val = 1.0, int kmc_every_val = 1);
+		~runKMC();
+
+		void Switch(atom_style *ATOMS);
+	};
+
 	class runLangevin{
 
 		public:
@@ -39,13 +53,14 @@ namespace program{
 		int traj_every;
 		bool norm;
 		bool zero;
+		bool kmc;
 
 		int maxSteps;
 
-		runLangevin(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true);
+		runLangevin(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false);
 		~runLangevin();
 
-		void integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input);
+		void integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, runKMC *KMC = NULL);
 	};
 }
 

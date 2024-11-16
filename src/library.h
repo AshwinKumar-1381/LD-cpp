@@ -29,9 +29,8 @@ namespace program{
         float L, pfrac;
         float m_str, PR, PeA, PeB;
         int N;
-
-        float runtime1;
-        float dt1;
+        float bias;
+        
     };
 }
 

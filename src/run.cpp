@@ -4,6 +4,7 @@
 #include "run.h"
 #include "compute.h"
 #include "fileIO.h"
+#include "random.h"
 
 using namespace program;
 
@@ -79,11 +80,14 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	maxSteps = ceil(time/dt);
 }
 
-void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, runKMC *KMC)
+void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, KMC_poisson *KMC)
 {
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
+
+	if(kmc == true) 
+		KMC -> initialize(Input, dt);
 
 	float d2t = 0.5*dt;
 	float dtm = float(dt/ATOMS[0].m);
@@ -107,7 +111,10 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 
 		if(step % traj_every == 0) 
 			program::write2traj(ATOMS, Input, runID, step);
-
+		
+		if(kmc == true) 
+			KMC -> Switch(ATOMS, Input, dt, step);
+		
 		BOX -> getBrownianForce(ATOMS, zero, step);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
@@ -140,15 +147,4 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 		program::computeKineticEnergy(ATOMS, BOX);	
 		program::computeTemperature(BOX);
 	}
-}
-
-program::runKMC::runKMC(float bias_val, int kmc_every_val)
-{
-	bias = bias_val;
-	kmc_every = kmc_every_val;
-}
-
-void program::runKMC::Switch(atom_style *ATOMS)
-{
-
 }

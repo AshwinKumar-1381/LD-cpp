@@ -39,10 +39,10 @@ namespace program {
     
     void checkMinImage(float *dx = NULL, float *dy = NULL); 
     void checkPBC(atom_style *ATOMS);
-    void getBrownianForce(atom_style *ATOMS, bool zero, int step);
     void setRandomConfig(atom_style *ATOMS);
     void assignMomenta(atom_style *ATOMS);
     void assignProperties(atom_style *ATOMS, sysInput *Input);
+    void getBrownianForce(atom_style *ATOMS, bool zero, int step);
     };
 }
 

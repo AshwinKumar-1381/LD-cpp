@@ -15,7 +15,7 @@ namespace program{
     float sigma;
     
     WCA();
-    ~WCA(){};
+    ~WCA();
     float energy(float r2ij);
     float force(float r2ij);
     

@@ -16,7 +16,7 @@
 #define NDIV (1+(IM-1)/NTAB)
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
-#define RANDCTR 4
+#define RANDCTR 5
 
 using namespace program;
 

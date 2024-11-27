@@ -16,18 +16,25 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr = atoi(argv[1]);
-    Input -> lj_ep = atof(argv[2]);
-    Input -> m_str = atof(argv[3]);
-    Input -> pfrac = atof(argv[4]);
-    Input -> L = atof(argv[5]);
-    Input -> PR = atof(argv[6]);
-    Input -> PeA = atof(argv[7]);
-    Input -> PeB = atof(argv[8]);
+    Input -> nr     = 10;
+    Input -> lj_ep  = 1.0;
+    Input -> m_str  = 1.0;
+    Input -> pfrac  = 0.5;
+    Input -> L      = 100.0;
+    Input -> S      = 1.0;
+    Input -> PR     = 0;
+    Input -> PeA    = 0.0;
+    Input -> PeB    = 5.0;
     
-    Input -> N = int(Input->pfrac*Input->L*Input->L); 
+    Input -> N = int(Input->pfrac*Input->L*Input->L*Input->S); 
 
+    auto begin = high_resolution_clock::now();
+    
     simulation(Input);
+    
+    auto end = high_resolution_clock::now();
+    program::printElapsed(begin, end);
+
     return(0);     
 }
 
@@ -41,9 +48,9 @@ void simulation(sysInput *Input)
 
 #ifdef INIT_CONFIG_FILE
     char *init_fname = {INIT_CONFIG_FILE};
-    BOX->initBox(ATOMS, BOX, INTERACTION, Input, init_fname); 
+    BOX -> initBox(ATOMS, BOX, INTERACTION, Input, init_fname); 
 #else
-    BOX->initBox(ATOMS, BOX, INTERACTION, Input);
+    BOX -> initBox(ATOMS, BOX, INTERACTION, Input);
 #endif
 
     char *fname = new char[50];
@@ -58,21 +65,27 @@ void simulation(sysInput *Input)
     program::writeFrame(ATOMS, Input, fname);
 
     // runNVE params - runID time dt thermo_every traj_every norm 
+    // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
+    // runKMC params - rate bias delay verbose
+
     runNVE *RUN1 = new runNVE(1, 10, 5e-4, 2000, 2000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
 
-    // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
-    runLangevin *RUN2 = new runLangevin(2, 500, 5e-4, 10000, 500, true, true, true);
+    /*
+    runLangevin *RUN2 = new runLangevin(2, 1000, 5e-4, 1000, 1000, true, true, false);
+    RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
+    */
+
+    runLangevin *RUN3 = new runLangevin(3, 5000, 5e-4, 1000, 500, true, true, true);
     KMC_poisson *KMC;
     
-    if(RUN2->kmc == true)
+    if(RUN3 -> kmc == true)
     { 
-        // runKMC params - rate bias verbose
-        KMC = new KMC_poisson(0.05, 0.5, false);
-        RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input, KMC);
+        KMC = new KMC_poisson(1e-5, 1.0, 0, false);
+        RUN3 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input, KMC);
     }
     else
-        RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
+        RUN3 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
 
     delete[] ATOMS;
     delete BOX;

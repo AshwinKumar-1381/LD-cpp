@@ -6,10 +6,11 @@
 
 using namespace program;
 
-program::KMC_poisson::KMC_poisson(float rate_val, float bias_val, bool v_val)
+program::KMC_poisson::KMC_poisson(float rate_val, float bias_val, int delay_val, bool v_val)
 {
 	kmc_rate = rate_val;
 	bias = bias_val;
+	delay = delay_val;
 	verbose = v_val;
 }
 
@@ -21,7 +22,7 @@ int program::KMC_poisson::Sample(float dt)
 		program::URN(&zahl1, &idum);
 		tau = -1.0*log(zahl1);
 		tau = ceil(tau/(kmc_rate * dt));
-	
+
 	} while(int(tau) < 1);
 	
 	return(int(tau));
@@ -29,12 +30,15 @@ int program::KMC_poisson::Sample(float dt)
 
 void program::KMC_poisson::initialize(sysInput *Input, float dt)
 {
+	numB = Input->PR*Input->N;
+	numA = Input->N - numB;
+
 	int *switchTimes = new int[Input->N];
 
 	program::URN(&zahl1, &idum, 5);
 
 	for(int i = 0; i < Input->N; i++) 
-		switchTimes[i] = Sample(dt); 
+		switchTimes[i] = delay + Sample(dt); 
 
 	for(int i = 0; i < Input->N; i++)
 	{
@@ -59,18 +63,6 @@ void program::KMC_poisson::initialize(sysInput *Input, float dt)
 		}
 	}
 
-	FILE *file = fopen("../tests/exp_data_linked_list.dat", "w");
-	fprintf(file, "id tau\n");
-
-	nodeKMC *curr = head->next;
-	do
-	{
-		fprintf(file, "%d %d\n", curr->pid, curr->tauStep);
-		curr = curr -> next;
-	} while(curr->next != nullptr);
-
-	fclose(file);
-
 	delete switchTimes;
 }
 
@@ -85,14 +77,24 @@ void program::KMC_poisson::Switch(atom_style *ATOMS, sysInput *Input, float dt, 
 
 			if(zahl1 <= bias/(1+bias))
 			{
-				ATOMS[curr->pid].id = 'O';
-				ATOMS[curr->pid].Pe = Input->PeB;
+				if(ATOMS[curr->pid].id == 'N')
+				{
+					ATOMS[curr->pid].id = 'O';
+					ATOMS[curr->pid].Pe = Input->PeB;
+					numA--;
+					numB++;
+				}
 			}
 				
 			else
 			{
-				ATOMS[curr->pid].id = 'N';
-				ATOMS[curr->pid].Pe = Input->PeA;
+				if(ATOMS[curr->pid].id == 'O')
+				{
+					ATOMS[curr->pid].id = 'N';
+					ATOMS[curr->pid].Pe = Input->PeA;
+					numB--;
+					numA++;
+				}
 			}
 
 			curr -> numSwitches++;

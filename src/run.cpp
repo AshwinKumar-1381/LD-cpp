@@ -112,8 +112,12 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 		if(step % traj_every == 0) 
 			program::write2traj(ATOMS, Input, runID, step);
 		
-		if(kmc == true) 
+		if(kmc == true)
+		{
 			KMC -> Switch(ATOMS, Input, dt, step);
+			if(step % thermo_every == 0) 
+				program::writeKMC(KMC, Input, step);
+		} 
 		
 		BOX -> getBrownianForce(ATOMS, zero, step);
 
@@ -128,8 +132,10 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 			ATOMS[i].p2x = ATOMS[i].p2x*c1 + ATOMS[i].bfx*c2;
 			ATOMS[i].p2y = ATOMS[i].p2y*c1 + ATOMS[i].bfy*c2;
 
-			if(ATOMS[i].rx <= 0.5*BOX->boxLength_x) ATOMS[i].p2x += 1.0*c3*ATOMS[i].Pe;
-			else ATOMS[i].p2x += -1.0*c3*ATOMS[i].Pe;
+			if(ATOMS[i].rx <= 0.5*BOX->boxLength_x) 
+				ATOMS[i].p2x += 1.0*c3*ATOMS[i].Pe;
+			else 
+				ATOMS[i].p2x += -1.0*c3*ATOMS[i].Pe;
 
 			ATOMS[i].rx = ATOMS[i].r2x + 0.5*dtm*ATOMS[i].p2x;
 			ATOMS[i].ry = ATOMS[i].r2y + 0.5*dtm*ATOMS[i].p2y;

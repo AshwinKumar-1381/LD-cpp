@@ -5,7 +5,7 @@
 
 #define pi 3.141592654
 
-// Random-Number-Generators
+// Random-Number-Generator-constants
 #define IA 16807
 #define IM 2147483647
 #define AM (1.0/IM)

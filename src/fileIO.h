@@ -17,6 +17,7 @@ namespace program{
 	void writeFrame(atom_style *ATOMS, sysInput *Input, char *fname);
 	void writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int step);
 	void write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step);
+	void writeKMC(KMC_poisson *KMC, sysInput *Input, int step = -1);
 }
 
 #endif /* FILEIO_H */

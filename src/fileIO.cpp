@@ -50,7 +50,8 @@ void program::writeLog(sysInput *Input)
 {
     char *fname = new char[50];
     sprintf(fname, "../Data%d/log.dat", Input->nr);
-    
+    remove(fname);
+
     FILE *log = fopen(fname, "w");
     if(log == NULL)
     {
@@ -58,9 +59,9 @@ void program::writeLog(sysInput *Input)
         exit(-1);
     }
     else
-    {
+    {   
         fprintf(log, "nr %d\n", Input->nr);
-        fprintf(log, "lj_ep %f\n", Input->nr);
+        fprintf(log, "lj_ep %f\n", Input->lj_ep);
         fprintf(log, "L %f\n", Input->L);
         fprintf(log, "pfrac %f\n", Input->pfrac);
         fprintf(log, "m_str %f\n", Input->m_str);
@@ -176,4 +177,62 @@ void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step
         fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
 
     fclose(traj);
+}
+
+void program::writeKMC(KMC_poisson *KMC, sysInput *Input, int step)
+{
+    char *fname = new char[500];
+    FILE *file;
+    sprintf(fname, "../Data%d/kmc.dat", Input->nr);
+
+    if(step == 0)
+    {
+        char *fname2 = new char[500];
+        sprintf(fname2, "../Data%d/kmc_switch_times.dat", Input->nr);
+        remove(fname2);
+
+        file = fopen(fname2, "w");
+        if(file == NULL)
+        {
+            printf("Cannot create %s file. Exiting...\n", fname2);
+            exit(-1);
+        }
+        else
+        {
+            fprintf(file, "pid tau\n");
+
+            nodeKMC *curr = KMC->head;
+            while(curr->next != NULL)
+            {
+                curr = curr->next;
+                fprintf(file, "%d %d\n", curr->pid, curr->tauStep);
+            }
+        }
+
+        fclose(file);
+
+        remove(fname);
+    
+        file = fopen(fname, "w");
+        if(file == NULL)
+        {
+            printf("Cannot create %s file. Exiting...\n", fname);
+            exit(-1);
+        }
+        else
+            fprintf(file, "Step numA numB\n");
+    }
+
+    else
+    {
+        file = fopen(fname, "a+");
+        if(file == NULL)
+        {
+            printf("Cannot open %s file. Exiting...\n", fname);
+            exit(-1);
+        }
+    }
+
+    fprintf(file, "%d %d %d\n", step, KMC->numA, KMC->numB);
+    fclose(file);
 }

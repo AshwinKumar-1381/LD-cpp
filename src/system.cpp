@@ -32,7 +32,7 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
 {   
     nAtoms = int(Input->N);
     boxLength_x = Input->L;
-    boxLength_y = boxLength_x;
+    boxLength_y = Input->S*boxLength_x;
     numFrac = Input->pfrac;
 
     buildCellMaps();
@@ -45,7 +45,8 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
     else 
     {
         setRandomConfig(ATOMS);
-        assignProperties(ATOMS, Input);
+        //setRandomRegionConfig(ATOMS, Input, 0.5*boxLength_x - 15.0, 0.5*boxLength_x + 15.0, 0.0, boxLength_y);
+        assignProperties(ATOMS, Input, false);
         assignMomenta(ATOMS);
     }
     
@@ -101,11 +102,10 @@ void program::SimBox::setRandomConfig(atom_style *ATOMS)
 	long idum;
 	program::URN(&zahl1, &idum, 1);
 
-	int accept;
 	int i = 0;
 	while(i < nAtoms)
 	{
-		accept = 1;
+		int accept = 1;
 
 		program::URN(&zahl1, &idum);
 		ATOMS[i].rx = boxLength_x*zahl1;
@@ -130,44 +130,134 @@ void program::SimBox::setRandomConfig(atom_style *ATOMS)
 	printf("Generated Random configuration for %d atoms.\n", nAtoms);	
 }
 
-void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input)
+void program::SimBox::setRandomRegionConfig(atom_style *ATOMS, sysInput *Input, float xmin, float xmax, float ymin, float ymax)
 {
 	float zahl1;
 	long idum;
-	program::URN(&zahl1, &idum, 2);
-	
-	int numA = 0, numB = 0;
-	int i = 0;
-	while(i < nAtoms)
-	{
-		int accept = 0;
-		program::URN(&zahl1, &idum);
-		
-		if((numA < nAtoms-int(Input->PR*nAtoms)) and (zahl1 < Input->PR or numB >= int(Input->PR*nAtoms)))
-		{
-			ATOMS[i].id = 'N';
-			ATOMS[i].Pe = Input->PeA;
-			numA++;
-			accept = 1;
-		}
+	program::URN(&zahl1, &idum, 1);
 
-		else
+	int i = 0;
+	while(i < Input->PR*nAtoms)
+	{
+		int accept = 1;
+
+		program::URN(&zahl1, &idum);
+		ATOMS[i].rx = xmin + zahl1*(xmax - xmin);
+		program::URN(&zahl1, &idum);
+		ATOMS[i].ry = ymin + zahl1*(ymax - ymin);
+
+		for(int j = 0; j < i; j++)
 		{
-			ATOMS[i].id = 'O';
-			ATOMS[i].Pe = Input->PeB;
-			numB++;
-			accept = 1;
+			float dx = ATOMS[i].rx - ATOMS[j].rx;
+			float dy = ATOMS[i].ry - ATOMS[j].ry;
+			checkMinImage(&dx, &dy);
+
+			if(sqrt(dx*dx + dy*dy) < 0.8)
+			{
+				accept = 0;
+				break;
+			}
 		}
 
 		if(accept == 1) i++;
 	}
 
-	for(int i = 0; i < nAtoms; i++)
+	while(i < nAtoms)
 	{
-		ATOMS[i].D = 1.0;
-		ATOMS[i].m = Input->m_str;
+		int accept = 1;
+
+		program::URN(&zahl1, &idum);
+		if(i < (1 + 0.5)*Input->PR*nAtoms)
+			ATOMS[i].rx = 0.0 + zahl1*(xmin - 0.0);
+		else
+			ATOMS[i].rx = xmax + zahl1*(boxLength_x - xmax);
+
+		program::URN(&zahl1, &idum);
+		ATOMS[i].ry = ymin + zahl1*(ymax - ymin);
+
+		for(int j = 0; j < i; j++)
+		{
+			float dx = ATOMS[i].rx - ATOMS[j].rx;
+			float dy = ATOMS[i].ry - ATOMS[j].ry;
+			checkMinImage(&dx, &dy);
+
+			if(sqrt(dx*dx + dy*dy) < 0.8)
+			{
+				accept = 0;
+				break;
+			}
+		}
+
+		if(accept == 1) i++;
+	}
+	printf("Generated Random configuration for %d atoms.\n", nAtoms);
+}
+
+void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool random)
+{
+	int numA = 0, numB = 0;
+
+	if(random == true)
+	{
+		float zahl1;
+		long idum;
+		program::URN(&zahl1, &idum, 2);
+	
+		int i = 0;
+		while(i < nAtoms)
+		{
+			int accept = 0;
+			program::URN(&zahl1, &idum);
+		
+			if((numA < nAtoms-int(Input->PR*nAtoms)) and (zahl1 < Input->PR or numB >= int(Input->PR*nAtoms)))
+			{
+				ATOMS[i].id = 'N';
+				ATOMS[i].Pe = Input->PeA;
+				numA++;
+				accept = 1;
+			}
+
+			else
+			{
+				ATOMS[i].id = 'O';
+				ATOMS[i].Pe = Input->PeB;
+				numB++;
+				accept = 1;
+			}
+
+			if(accept == 1) i++;
+		}
+
+		for(int i = 0; i < nAtoms; i++)
+		{
+			ATOMS[i].D = 1.0;
+			ATOMS[i].m = Input->m_str;
+		}
 	}
 
+	else
+	{
+		for(int i = 0; i < Input->PR*nAtoms; i++)
+		{
+			ATOMS[i].id = 'O';
+			ATOMS[i].Pe = Input -> PeB;
+			numB++;
+		}
+
+		for(int i = Input->PR*nAtoms; i < nAtoms; i++)
+		{
+			ATOMS[i].id = 'N';
+			ATOMS[i].Pe = Input -> PeA;
+			numA++;
+		}
+
+		for(int i = 0; i < nAtoms; i++)
+		{
+			ATOMS[i].D = 1.0;
+			ATOMS[i].m = Input->m_str;
+		}
+	}
+	
 	printf("Created %d atoms of type A and %d atoms of type B\n", numA, numB);
 }
 

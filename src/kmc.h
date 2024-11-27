@@ -32,19 +32,20 @@ namespace program{
 
 		float kmc_rate;
 		float bias;
+		int delay;
+		bool verbose;
 		long idum;
 		float zahl1;
 		nodeKMC *head; 
-		bool verbose;
-		int numAB, numBA;
+		int numA, numB;
 
-		KMC_poisson(float rate_val = 1.0, float bias_val = 1.0, bool v_val = false);
+		KMC_poisson(float rate_val = 1.0, float bias_val = 1.0, int delay_val = 0, bool v_val = false);
 		~KMC_poisson();
 
 		void initialize(sysInput *Input, float dt);
 		int Sample(float dt);
 		void insertNode(nodeKMC *newNode);
-		void Switch(atom_style *ATOMS, sysInput *Input, float dt, int step);
+		void Switch(atom_style *ATOMS, sysInput *Input, float dt, int step); 
 	};
 }
 

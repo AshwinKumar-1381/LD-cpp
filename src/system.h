@@ -5,6 +5,7 @@
 
 #include "particles.h"
 #include "interactions.h"
+#include "kmc.h"
 
 #define MAXCELL 900000
 
@@ -40,8 +41,9 @@ namespace program {
     void checkMinImage(float *dx = NULL, float *dy = NULL); 
     void checkPBC(atom_style *ATOMS);
     void setRandomConfig(atom_style *ATOMS);
+    void setRandomRegionConfig(atom_style *ATOMS, sysInput *Input, float x_min, float x_max, float y_min, float y_max);
     void assignMomenta(atom_style *ATOMS);
-    void assignProperties(atom_style *ATOMS, sysInput *Input);
+    void assignProperties(atom_style *ATOMS, sysInput *Input, bool random = true);
     void getBrownianForce(atom_style *ATOMS, bool zero, int step);
     };
 }

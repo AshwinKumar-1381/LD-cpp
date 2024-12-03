@@ -5,7 +5,7 @@
 
 #include "system.h"
 
-#define rcut 1.122462048 
+#define rcut 1.123595506 
 
 using namespace program;
 

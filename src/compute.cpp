@@ -81,7 +81,7 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 
 					float r2ij = dx*dx + dy*dy;
 
-					if(r2ij <= rcut * rcut)
+					if(r2ij <= rcut*rcut)
 					{
 						float F = INTERACTION->force(r2ij);
 						float EPOT = INTERACTION->energy(r2ij);

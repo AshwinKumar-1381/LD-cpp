@@ -63,6 +63,7 @@ void program::writeLog(sysInput *Input)
         fprintf(log, "nr %d\n", Input->nr);
         fprintf(log, "lj_ep %f\n", Input->lj_ep);
         fprintf(log, "L %f\n", Input->L);
+        fprintf(log, "S %f\n", Input->S);
         fprintf(log, "pfrac %f\n", Input->pfrac);
         fprintf(log, "m_str %f\n", Input->m_str);
         fprintf(log, "PR %f\n", Input->PR);
@@ -174,7 +175,7 @@ void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step
     fprintf(traj, "Timestep %d\n", step);
 
     for(int i = 0; i < Input -> N; i++) 
-        fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
+        fprintf(traj, "%c %f %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz, ATOMS[i].px, ATOMS[i].py);
 
     fclose(traj);
 }

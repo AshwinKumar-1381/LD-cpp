@@ -118,7 +118,7 @@ void program::SimBox::setRandomConfig(atom_style *ATOMS)
 			float dy = ATOMS[i].ry - ATOMS[j].ry;
 			checkMinImage(&dx, &dy);
 
-			if(sqrt(dx*dx + dy*dy) < 0.8)
+			if(sqrt(dx*dx + dy*dy) < 1.0)
 			{
 				accept = 0;
 				break;
@@ -291,7 +291,11 @@ int program::SimBox::cellindex(int ix, int iy)
 	else if (ix==-1) ix = Ncell_x - 1; 
 	if (iy == Ncell_y) iy = 0;
 	else if (iy == -1) iy = Ncell_y - 1;
-	return (1 + ix + iy*Ncell_y);
+
+	if(Ncell_x >= Ncell_y)
+		return (1 + ix + iy*Ncell_x);
+	else
+		return (1 + ix + iy*Ncell_y);
 }
 
 void program::SimBox::buildCellMaps()
@@ -331,7 +335,7 @@ void program::SimBox::buildCellList(atom_style *ATOMS)
 		int ix = int(ATOMS[ii].rx/rcell_x);
 		int iy = int(ATOMS[ii].ry/rcell_y);
 		
-		int icell = 1 + ix + iy*Ncell_y;	        
+		int icell = cellindex(ix, iy);	        
 		LIST[i] = HEAD[icell];
 		HEAD[icell] = i;		    
 	}	

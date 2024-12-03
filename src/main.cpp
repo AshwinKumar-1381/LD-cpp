@@ -16,15 +16,15 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr     = 10;
+    Input -> nr     = 41;
     Input -> lj_ep  = 1.0;
     Input -> m_str  = 1.0;
     Input -> pfrac  = 0.5;
-    Input -> L      = 100.0;
-    Input -> S      = 1.0;
+    Input -> L      = 200.0;
+    Input -> S      = 0.5;
     Input -> PR     = 0;
     Input -> PeA    = 0.0;
-    Input -> PeB    = 5.0;
+    Input -> PeB    = 1.0;
     
     Input -> N = int(Input->pfrac*Input->L*Input->L*Input->S); 
 
@@ -67,21 +67,21 @@ void simulation(sysInput *Input)
     // runNVE params - runID time dt thermo_every traj_every norm 
     // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
     // runKMC params - rate bias delay verbose
-
-    runNVE *RUN1 = new runNVE(1, 10, 5e-4, 2000, 2000, true);
+    
+    runNVE *RUN1 = new runNVE(1, 10, 5e-4, 2000, 1000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTION, Input);
 
     /*
     runLangevin *RUN2 = new runLangevin(2, 1000, 5e-4, 1000, 1000, true, true, false);
     RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input);
     */
-
-    runLangevin *RUN3 = new runLangevin(3, 5000, 5e-4, 1000, 500, true, true, true);
+    
+    runLangevin *RUN3 = new runLangevin(3, 15000, 5e-4, 1000, 1000, true, true, true);
     KMC_poisson *KMC;
     
     if(RUN3 -> kmc == true)
     { 
-        KMC = new KMC_poisson(1e-5, 1.0, 0, false);
+        KMC = new KMC_poisson(1e-2, 1.0, 0, false);
         RUN3 -> integrateLangevin(ATOMS, BOX, INTERACTION, Input, KMC);
     }
     else

@@ -24,6 +24,13 @@ program::SimBox::SimBox(){
     rcell_y = rcell_x;
     Ncell_x = int(boxLength_x/rcell_x);
     Ncell_y = int(boxLength_y/rcell_y);
+
+    for(int i = 0; i < MAXCELL; i++)
+	{
+		MAPS[i] = 0;
+		LIST[i] = 0;
+		HEAD[i] = 0;
+	}
 }
 
 program::SimBox::~SimBox(){}

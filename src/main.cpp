@@ -42,9 +42,7 @@ void simulation(sysInput *Input)
 {
     SimBox *BOX = new SimBox;
     atom_style *ATOMS = new atom_style[Input->N];
-    
-    pair_style *INTERACTION = new pair_style;
-    INTERACTION->epsilon = Input->lj_ep;
+    pair_style *INTERACTION = new pair_style(Input->lj_ep, 1.0, 1.122462048);
 
 #ifdef INIT_CONFIG_FILE
     char *init_fname = {INIT_CONFIG_FILE};

@@ -5,10 +5,11 @@
 
 using namespace program;
 
-program::WCA::WCA()
+program::WCA::WCA(float eps, float sig, float cut)
 {
-	epsilon = 1.0;
-	sigma = 1.0;
+	epsilon = eps;
+	sigma = sig;
+	rcut = cut;
 }
 
 float program::WCA::energy(float r2ij)

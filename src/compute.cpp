@@ -51,7 +51,6 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 			}
 			i = BOX->LIST[i];
 		}
-
 	}
 
 	int nNbors = 4;

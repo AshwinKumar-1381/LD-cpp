@@ -32,7 +32,7 @@ namespace program {
     
     SimBox();
     ~SimBox();
-    void initBox(atom_style* ATOMS, SimBox* BOX, pair_style* INTERACTION, sysInput *Input, char* fname = NULL);
+    void initBox(atom_style* ATOMS, SimBox* BOX, interactions*** INTERACTIONS, sysInput *Input, char* fname = NULL);
     
     int cellindex(int ix, int iy);
     void buildCellMaps();

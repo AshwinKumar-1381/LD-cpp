@@ -5,13 +5,11 @@
 
 #include "system.h"
 
-#define rcut 1.123595506 
-
 using namespace program;
 
 namespace program{
 
-	void computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION);
+	void computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTION);
 	void computeKineticEnergy(atom_style *ATOMS, SimBox *BOX);
 	void computeTemperature(SimBox *BOX);
 }

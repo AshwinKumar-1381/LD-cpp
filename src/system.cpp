@@ -4,6 +4,7 @@
 #include "fileIO.h"
 #include "compute.h"
 #include "random.h"
+#include "system.h"
 
 using namespace program;
 
@@ -35,7 +36,7 @@ program::SimBox::SimBox(){
 
 program::SimBox::~SimBox(){}
 
-void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, char *fname)
+void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, char *fname)
 {   
     nAtoms = int(Input->N);
     boxLength_x = Input->L;
@@ -57,7 +58,7 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, pair_style *INTERA
         assignMomenta(ATOMS);
     }
     
-    program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
+    program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
     program::computeKineticEnergy(ATOMS, BOX);
     program::computeTemperature(BOX);
 }
@@ -219,6 +220,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 			if((numA < nAtoms-int(Input->PR*nAtoms)) and (zahl1 < Input->PR or numB >= int(Input->PR*nAtoms)))
 			{
 				ATOMS[i].id = 'N';
+				ATOMS[i].type = 1;
 				ATOMS[i].Pe = Input->PeA;
 				numA++;
 				accept = 1;
@@ -227,6 +229,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 			else
 			{
 				ATOMS[i].id = 'O';
+				ATOMS[i].type = 2;
 				ATOMS[i].Pe = Input->PeB;
 				numB++;
 				accept = 1;
@@ -247,6 +250,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 		for(int i = 0; i < Input->PR*nAtoms; i++)
 		{
 			ATOMS[i].id = 'O';
+			ATOMS[i].type = 2;
 			ATOMS[i].Pe = Input -> PeB;
 			numB++;
 		}
@@ -254,6 +258,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 		for(int i = Input->PR*nAtoms; i < nAtoms; i++)
 		{
 			ATOMS[i].id = 'N';
+			ATOMS[i].type = 1;
 			ATOMS[i].Pe = Input -> PeA;
 			numA++;
 		}

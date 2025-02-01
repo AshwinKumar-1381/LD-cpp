@@ -22,6 +22,7 @@ namespace program{
     float D;
     float Pe;
     char id;
+    int type;
     
     Atoms2D();
     ~Atoms2D();

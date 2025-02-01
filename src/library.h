@@ -12,8 +12,10 @@
 #include<fstream>
 #include<cmath>
 #include<sys/stat.h>
-#include<omp.h>
 #include<chrono>
+#include<vector>
+#include<cstring>
+#include<any>
 
 using namespace std;
 using namespace std::chrono;

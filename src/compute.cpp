@@ -3,7 +3,7 @@
 #include "library.h"
 #include "compute.h"
 
-void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION)
+void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS)
 {
 	BOX->buildCellList(ATOMS);
 
@@ -33,10 +33,16 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 				float dy = ryi - ATOMS[jj].ry;
 				float r2ij = dx*dx + dy*dy;
 
+				int typei = ATOMS[ii].type;
+				int typej = ATOMS[jj].type;
+
+				float rcut = INTERACTIONS[typei][typej]->getrc();
+
 				if(r2ij <= rcut*rcut)
 				{
-					float F = INTERACTION->force(r2ij);
-					float EPOT = INTERACTION->energy(r2ij);
+					float *pairs = INTERACTIONS[typei][typej]->getForce(r2ij);  
+					float EPOT = pairs[0];
+					float F = pairs[1];
 
 					dx *= F;
 					dy *= F;
@@ -46,7 +52,8 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 					ATOMS[ii].fy += dy;
 					ATOMS[jj].fy -= dy;
 					BOX->pe += EPOT;
-				} 
+				}
+				
 				j = BOX->LIST[j];
 			}
 			i = BOX->LIST[i];
@@ -77,13 +84,18 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, pair_
 					float dy = ryi - ATOMS[jj].ry;
 
 					BOX->checkMinImage(&dx, &dy);
-
 					float r2ij = dx*dx + dy*dy;
+
+					int typei = ATOMS[ii].type;
+					int typej = ATOMS[jj].type;
+
+					float rcut = INTERACTIONS[typei][typej]->getrc();
 
 					if(r2ij <= rcut*rcut)
 					{
-						float F = INTERACTION->force(r2ij);
-						float EPOT = INTERACTION->energy(r2ij);
+						float *pairs = INTERACTIONS[typei][typej]->getForce(r2ij);  
+						float EPOT = pairs[0];
+						float F = pairs[1];
 
 						dx *= F;
 						dy *= F;

@@ -18,6 +18,7 @@ program::Atoms2D::Atoms2D()
     D=1.0;
     Pe=0.0; 
     id='A';
+    type=0;
 }
 
 program::Atoms2D::~Atoms2D(){}

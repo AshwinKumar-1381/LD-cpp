@@ -12,7 +12,9 @@ namespace program{
     public:
     
     float rx, ry, rz;
+    float xsave, ysave;
     float r2x, r2y;
+    float dx, dy;
     float px, py;
     float p2x, p2y;
     float fx, fy;

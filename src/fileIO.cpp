@@ -22,7 +22,7 @@ void program::readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname)
         for(int i = 0; i < BOX->nAtoms; i++)
         {
             fgets(pipeString, 500, initFile);
-            sscanf(pipeString, "%c %f %f %f %f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry, &ATOMS[i].px, &ATOMS[i].py);
+            sscanf(pipeString, "%c %f %f %f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry, &ATOMS[i].rz);
         }   
     }
     
@@ -46,7 +46,7 @@ void program::makeFolder(sysInput *Input)
     delete(fname);
 }
 
-void program::writeLog(sysInput *Input)
+void program::writeLog(sysInput *Input, SimBox *BOX, runLangevin *RUN, KMC_poisson* KMC)
 {
     char *fname = new char[50];
     sprintf(fname, "../Data%d/log.dat", Input->nr);
@@ -60,16 +60,27 @@ void program::writeLog(sysInput *Input)
     }
     else
     {   
-        fprintf(log, "nr %d\n", Input->nr);
-        fprintf(log, "lj_ep %f\n", Input->lj_ep);
-        fprintf(log, "L %f\n", Input->L);
-        fprintf(log, "S %f\n", Input->S);
-        fprintf(log, "pfrac %f\n", Input->pfrac);
-        fprintf(log, "m_str %f\n", Input->m_str);
-        fprintf(log, "PR %f\n", Input->PR);
-        fprintf(log, "Pe_A %f\n", Input->PeA);
-        fprintf(log, "Pe_B %f\n", Input->PeB);
-        fprintf(log, "N %d\n", Input->N);
+        time_t startTime = high_resolution_clock::to_time_t(Input->begin);
+
+        fprintf(log, "RUN PARAMS\n\n");
+        fprintf(log, "Date & Time : %s", ctime(&startTime));
+        fprintf(log, "nr = %d\n", Input->nr);
+        fprintf(log, "Run%d time = %f\n", RUN->runID, RUN->time);
+        fprintf(log, "dt = %f\n", RUN->dt);
+        fprintf(log, "Nsteps = %d\n\n", RUN->maxSteps);
+
+        fprintf(log, "SIM PARAMS\n\n");
+        fprintf(log, "Lx = %f\n", BOX->boxLength_x);
+        fprintf(log, "Ly = %f\n", BOX->boxLength_y);
+        fprintf(log, "pfrac = %f\n", Input->pfrac);
+        fprintf(log, "N = %d\n", Input->N);
+        fprintf(log, "PR = %f\n", Input->PR);
+        fprintf(log, "Pe_A = %f\n", Input->PeA);
+        fprintf(log, "Pe_B = %f\n\n", Input->PeB);
+
+        fprintf(log, "KMC PARAMS\n\n");
+        fprintf(log, "lambda = %f\n", KMC->kmc_rate);
+        fprintf(log, "bias param = %f\n", KMC->bias);
     }
     fclose(log);
     delete(fname);
@@ -236,4 +247,21 @@ void program::writeKMC(KMC_poisson *KMC, sysInput *Input, int step)
 
     fprintf(file, "%d %d %d\n", step, KMC->numA, KMC->numB);
     fclose(file);
+}
+
+void program::printElapsed(sysInput *Input)
+{
+    auto dur = duration_cast<seconds>(Input->end - Input->begin);
+
+    int t_time = dur.count();
+    int time[3] = {0, 0, 0}; 
+    int fac1 = 3600;
+    for (int i = 0; i<3; i++)
+    {
+        time[i] = int(t_time/fac1);
+        t_time -= time[i]*fac1;
+        fac1 /= 60;    
+    }
+    
+    printf("\nTotal simulation time = %d hrs %d mins %d secs\n", time[0], time[1], time[2]);
 }

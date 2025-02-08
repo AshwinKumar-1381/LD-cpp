@@ -4,15 +4,16 @@
 #define FILEIO_H
 
 #include "system.h"
+#include "kmc.h"
+#include "run.h"
 
 using namespace program;
 
 namespace program{
 
 	void readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname);
-
 	void makeFolder(sysInput *Input);
-	void writeLog(sysInput *Input);
+	void writeLog(sysInput *Input, SimBox *BOX, runLangevin *RUN, KMC_poisson* KMC);
 	void write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fname);
 	void writeFrame(atom_style *ATOMS, sysInput *Input, char *fname);
 	void writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int step);

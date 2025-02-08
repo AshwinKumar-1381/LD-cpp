@@ -20,7 +20,7 @@ program::runNVE::runNVE(int id, float t, float delta_t, int thermo_val, int traj
 	maxSteps = ceil(time/dt + 1);
 }
 
-void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input)
+void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input)
 {
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
@@ -54,7 +54,7 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, pair_style *I
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -80,14 +80,19 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	maxSteps = ceil(time/dt + 1);
 }
 
-void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pair_style *INTERACTION, sysInput *Input, KMC_poisson *KMC)
+void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
 {
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
 
 	if(kmc == true) 
-		KMC -> initialize(Input, dt);
+	{
+		if(KMC -> dist == true)
+			KMC -> initialize(Input, dt, ATOMS, BOX);
+		else
+			KMC -> initialize(Input, dt);
+	}
 
 	float d2t = 0.5*dt;
 	float dtm = float(dt/ATOMS[0].m);
@@ -114,7 +119,7 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 		
 		if(kmc == true)
 		{
-			KMC -> Switch(ATOMS, Input, dt, step);
+			KMC -> Switch(ATOMS, BOX, Input, dt, step);
 			if(step % thermo_every == 0) 
 				program::writeKMC(KMC, Input, step);
 		} 
@@ -142,7 +147,7 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTION);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -152,5 +157,16 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, pai
 
 		program::computeKineticEnergy(ATOMS, BOX);	
 		program::computeTemperature(BOX);
+	}
+
+	if(kmc == true)
+	{
+		if(KMC -> dist == true)
+		{
+			KMC -> dist_msd_tau -> normalize(dt);
+
+			sprintf(KMC->dist_msd_tau->fpathO, "../Data%d/kmcDist.dat", Input->nr);
+			KMC -> dist_msd_tau -> write2file();
+		}
 	}
 }

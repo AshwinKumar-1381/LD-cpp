@@ -46,6 +46,7 @@ namespace program{
 
     interactions*** createInteractions(int nAtomTypes);
     void mirrorInteractions(interactions ***Int, int nAtomTypes);
+    float getmaxrc(interactions ***Int, int nAtomTypes);
 }
 
 #endif /*INTERACTIONS_H*/

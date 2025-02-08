@@ -31,6 +31,21 @@ void program::mirrorInteractions(interactions ***Int, int nAtomTypes)
 	}	
 }
 
+float program::getmaxrc(interactions ***Int, int nAtomTypes)
+{
+	float maxval = 0.0;
+	for(int i = 1; i < nAtomTypes + 1; i++)
+	{
+		for(int j = 1; j < nAtomTypes + 1; j++)
+		{	
+			float rc = Int[i][j]->getrc();  
+			if(rc > maxval) maxval = rc; 
+		}
+	}
+	if(maxval == 0.0) maxval = 1.122462048;
+	return(maxval);
+}
+
 // ------------------ interactions class members ------------------
 program::interactions::interactions(const char *Type, vector<float> params)
 {

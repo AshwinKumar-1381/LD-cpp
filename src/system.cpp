@@ -11,6 +11,7 @@ using namespace program;
 program::SimBox::SimBox(){
 	dim = 2;
     nAtoms = 1;
+    nAtomTypes = 1;
     boxLength_x = 1.0;
     boxLength_y = boxLength_x;
     numFrac = 1.0;
@@ -39,10 +40,13 @@ program::SimBox::~SimBox(){}
 void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, char *fname)
 {   
     nAtoms = int(Input->N);
+    nAtomTypes = Input->nAtomTypes;
     boxLength_x = Input->L;
     boxLength_y = Input->S*boxLength_x;
     numFrac = Input->pfrac;
 
+    rcell_x = program::getmaxrc(INTERACTIONS, nAtomTypes);
+    rcell_y = rcell_x;
     buildCellMaps();
     
     if(fname != NULL)

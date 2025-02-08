@@ -5,7 +5,6 @@
 
 #include "particles.h"
 #include "interactions.h"
-#include "kmc.h"
 
 #define MAXCELL 900000
 
@@ -19,6 +18,7 @@ namespace program {
     
     int dim;
     int nAtoms;
+    int nAtomTypes;
     float boxLength_x;
     float boxLength_y;
     float numFrac;

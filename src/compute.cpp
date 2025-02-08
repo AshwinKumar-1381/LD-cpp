@@ -52,6 +52,8 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, inter
 					ATOMS[ii].fy += dy;
 					ATOMS[jj].fy -= dy;
 					BOX->pe += EPOT;
+
+					delete[] pairs;
 				}
 				
 				j = BOX->LIST[j];
@@ -76,7 +78,7 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, inter
 				int jcell = BOX->MAPS[icell_index + nbor];
 
 				int j = BOX->HEAD[jcell];
-				while(j != 0)
+				while (j != 0)
 				{
 					int jj = j - 1;
 
@@ -105,6 +107,8 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, inter
 						ATOMS[ii].fy += dy;
 						ATOMS[jj].fy -= dy;
 						BOX->pe += EPOT;
+
+						delete[] pairs;
 					}
 					j = BOX->LIST[j];
 				}

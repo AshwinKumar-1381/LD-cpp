@@ -9,7 +9,7 @@ using namespace program;
 
 namespace program{
 
-	void computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTION);
+	void computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS);
 	void computeKineticEnergy(atom_style *ATOMS, SimBox *BOX);
 	void computeTemperature(SimBox *BOX);
 }

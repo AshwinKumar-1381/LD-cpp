@@ -17,7 +17,7 @@ program::runNVE::runNVE(int id, float t, float delta_t, int thermo_val, int traj
 	traj_every = traj_val;
 	norm = norm_val;
 
-	maxSteps = ceil((time + 1.0)/dt);
+	maxSteps = ceil(time/dt + 1);
 }
 
 void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input)
@@ -77,7 +77,7 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	zero = zero_val;
 	kmc = kmc_val;
 
-	maxSteps = ceil((time + 1.0)/dt);
+	maxSteps = ceil(time/dt + 1);
 }
 
 void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)

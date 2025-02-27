@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr         = 26;
+    Input -> nr         = 3;
     Input -> nAtomTypes = 2;
     Input -> m_str      = 1.0;
     Input -> pfrac      = 0.5;
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     Input -> S          = 0.25;
     Input -> PR         = 0.0;
     Input -> PeA        = 0.0;
-    Input -> PeB        = 1e-3;
+    Input -> PeB        = 2.0;
 
     Input -> begin = high_resolution_clock::now();
     program::simulation(Input);
@@ -44,7 +44,7 @@ void program::simulation(sysInput *Input)
     
     INTERACTIONS[1][1] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
     INTERACTIONS[2][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[1][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
+    INTERACTIONS[1][2] = new interactions("WCA_2P", {5.0, 1.0, 1.122462048});
 
     program::mirrorInteractions(INTERACTIONS, Input->nAtomTypes);
 
@@ -69,7 +69,7 @@ void program::simulation(sysInput *Input)
     // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
     // runKMC params - rate bias delay verbose dist
 
-    runNVE *RUN1 = new runNVE(1, 1000, 5e-4, 10000, 10000, true);
+    runNVE *RUN1 = new runNVE(1, 10, 5e-4, 1000, 1000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTIONS, Input);
     
     runLangevin *RUN2 = new runLangevin(2, 50000, 5e-4, 10000, 10000, true, true, true);
@@ -77,7 +77,7 @@ void program::simulation(sysInput *Input)
     
     if(RUN2 -> kmc == true)
     { 
-        KMC = new KMC_poisson(0.2, 1.0, 0, false, false);
+        KMC = new KMC_poisson(1e-3, 1.0, 0, false, true);
         RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTIONS, Input, KMC);
     }
     else

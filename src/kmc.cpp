@@ -138,7 +138,7 @@ void program::KMC_poisson::initialize(sysInput *Input, float dt, atom_style *ATO
 
 		float rmax = max(BOX->boxLength_x, BOX->boxLength_y);
 		float tauAvg = ceil(1.0/(kmc_rate*dt)); 		// Avg. no.of steps required to switch
-		dist_msd_tau = new dispDist(4.0, rmax, 0.1*tauAvg, 5.0*tauAvg, tauAvg);
+		dist_msd_tau = new dispDist(4.0, rmax, 0.1*tauAvg, 10.0*tauAvg, tauAvg);
 	}
 }
 

@@ -27,7 +27,7 @@ namespace program{
     	public:
     		
         int nr;
-        float t_run1;
+        float dt;
         float L, S, pfrac;
         float m_str, PR, PeA, PeB;
         int N, nAtomTypes;
@@ -36,7 +36,7 @@ namespace program{
     };
 
     void simulation(sysInput *Input);
-    void printElapsed(sysInput *Input);
+    char* returnElapsedTime(sysInput *Input);
 }
 
 #endif /* LIBRARY_H */

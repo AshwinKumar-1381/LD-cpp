@@ -61,9 +61,12 @@ void program::writeLog(sysInput *Input, SimBox *BOX, runLangevin *RUN, KMC_poiss
     else
     {   
         time_t startTime = high_resolution_clock::to_time_t(Input->begin);
+        time_t endTime = high_resolution_clock::to_time_t(Input->end);
 
         fprintf(log, "RUN PARAMS\n\n");
-        fprintf(log, "Date & Time : %s", ctime(&startTime));
+        fprintf(log, "Start Time : %s", ctime(&startTime));
+        fprintf(log, "End Time : %s", ctime(&endTime));
+        fprintf(log, "%s\n", program::returnElapsedTime(Input));
         fprintf(log, "nr = %d\n", Input->nr);
         fprintf(log, "Run%d time = %f\n", RUN->runID, RUN->time);
         fprintf(log, "dt = %f\n", RUN->dt);
@@ -249,7 +252,7 @@ void program::writeKMC(KMC_poisson *KMC, sysInput *Input, int step)
     fclose(file);
 }
 
-void program::printElapsed(sysInput *Input)
+char* program::returnElapsedTime(sysInput *Input)
 {
     auto dur = duration_cast<seconds>(Input->end - Input->begin);
 
@@ -263,5 +266,8 @@ void program::printElapsed(sysInput *Input)
         fac1 /= 60;    
     }
     
-    printf("\nTotal simulation time = %d hrs %d mins %d secs\n", time[0], time[1], time[2]);
+    char *strtime = new char[50];
+    sprintf(strtime, "Total simulation time = %d hrs %d mins %d secs\n", time[0], time[1], time[2]);
+
+    return(strtime);
 }

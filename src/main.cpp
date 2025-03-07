@@ -15,9 +15,10 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr         = 3;
+    Input -> nr         = 19;
     Input -> nAtomTypes = 2;
     Input -> m_str      = 1.0;
+    Input -> dt         = 5e-4;
     Input -> pfrac      = 0.5;
     Input -> L          = 200.0;
     Input -> S          = 0.25;
@@ -25,17 +26,14 @@ int main(int argc, char *argv[])
     Input -> PeA        = 0.0;
     Input -> PeB        = 2.0;
 
-    Input -> begin = high_resolution_clock::now();
     program::simulation(Input);
-    Input -> end = high_resolution_clock::now();
-
-    program::printElapsed(Input);
-
     return(0);     
 }
 
 void program::simulation(sysInput *Input)
 {
+    Input -> begin = high_resolution_clock::now();
+
     Input -> N = int(Input->pfrac*Input->L*Input->L*Input->S); 
 
     SimBox *BOX = new SimBox;
@@ -44,7 +42,7 @@ void program::simulation(sysInput *Input)
     
     INTERACTIONS[1][1] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
     INTERACTIONS[2][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[1][2] = new interactions("WCA_2P", {5.0, 1.0, 1.122462048});
+    INTERACTIONS[1][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
 
     program::mirrorInteractions(INTERACTIONS, Input->nAtomTypes);
 
@@ -69,19 +67,22 @@ void program::simulation(sysInput *Input)
     // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
     // runKMC params - rate bias delay verbose dist
 
-    runNVE *RUN1 = new runNVE(1, 10, 5e-4, 1000, 1000, true);
+    runNVE *RUN1 = new runNVE(1, 1000, Input->dt, 10000, 10000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTIONS, Input);
     
-    runLangevin *RUN2 = new runLangevin(2, 50000, 5e-4, 10000, 10000, true, true, true);
+    runLangevin *RUN2 = new runLangevin(2, 50000, Input->dt, 10000, 10000, true, true, true);
     KMC_poisson *KMC;
     
     if(RUN2 -> kmc == true)
     { 
-        KMC = new KMC_poisson(1e-3, 1.0, 0, false, true);
+        KMC = new KMC_poisson(2e-3, 1.0, 0, false, false);
         RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTIONS, Input, KMC);
     }
     else
         RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTIONS, Input);
+
+    Input -> end = high_resolution_clock::now();
+    printf("\n%s", program::returnElapsedTime(Input));
 
     program::writeLog(Input, BOX, RUN2, KMC);
 

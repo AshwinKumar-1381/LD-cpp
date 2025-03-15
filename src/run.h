@@ -20,7 +20,6 @@ namespace program{
 		int thermo_every;
 		int traj_every;
 		bool norm;
-
 		int maxSteps;
 
 		runNVE(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true);
@@ -29,7 +28,7 @@ namespace program{
 		void integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input); 
 	};
 
-	class runLangevin{
+	typedef class runLangevin{
 
 		public:
 
@@ -41,7 +40,6 @@ namespace program{
 		bool norm;
 		bool zero;
 		bool kmc;
-
 		int maxSteps;
 
 		runLangevin(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false);
@@ -49,6 +47,26 @@ namespace program{
 
 		void integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC = NULL);
 	};
+
+	typedef class runBrownian{
+
+		public:
+
+		int runID;
+		float time;
+		float dt;
+		int thermo_every;
+		int traj_every;
+		bool norm;
+		bool zero;
+		bool kmc;
+		int maxSteps;
+
+		runBrownian(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false);
+		~runBrownian();
+
+		void integrateBrownian(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC = NULL);
+	}run_style;
 }
 
 #endif /*RUN_H*/ 

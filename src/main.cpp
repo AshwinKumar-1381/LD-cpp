@@ -15,16 +15,16 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr         = 19;
+    Input -> nr         = 263;
     Input -> nAtomTypes = 2;
     Input -> m_str      = 1.0;
-    Input -> dt         = 5e-4;
+    Input -> dt         = 1e-4;
     Input -> pfrac      = 0.5;
-    Input -> L          = 200.0;
-    Input -> S          = 0.25;
+    Input -> L          = 50.0;
+    Input -> S          = 1.0;
     Input -> PR         = 0.0;
-    Input -> PeA        = 0.0;
-    Input -> PeB        = 2.0;
+    Input -> PeA        = -0.0;
+    Input -> PeB        = +0.0;
 
     program::simulation(Input);
     return(0);     
@@ -40,9 +40,9 @@ void program::simulation(sysInput *Input)
     atom_style *ATOMS = new atom_style[Input->N];
     interactions ***INTERACTIONS = program::createInteractions(Input->nAtomTypes);
     
-    INTERACTIONS[1][1] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[2][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[1][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
+    INTERACTIONS[1][1] = new interactions("WCA_2P", {0.0, 1.0, 1.122462048});
+    INTERACTIONS[2][2] = new interactions("WCA_2P", {0.0, 1.0, 1.122462048});
+    INTERACTIONS[1][2] = new interactions("WCA_2P", {0.0, 1.0, 1.122462048});
 
     program::mirrorInteractions(INTERACTIONS, Input->nAtomTypes);
 
@@ -65,21 +65,35 @@ void program::simulation(sysInput *Input)
 
     // runNVE params - runID time dt thermo_every traj_every norm 
     // runLangevin params - runID time dt thermo_every traj_every norm zero kmc
+    // runBrownian params - runID time dt thermo_every traj_every norm zero kmc
     // runKMC params - rate bias delay verbose dist
 
-    runNVE *RUN1 = new runNVE(1, 1000, Input->dt, 10000, 10000, true);
+    runNVE *RUN1 = new runNVE(1, 1, Input->dt, 10000, 10000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTIONS, Input);
     
-    runLangevin *RUN2 = new runLangevin(2, 50000, Input->dt, 10000, 10000, true, true, true);
+    /*
+    run_style *RUN2 = new run_style(2, 50000, Input->dt, 10000, 10000, true, true, true);
     KMC_poisson *KMC;
     
     if(RUN2 -> kmc == true)
     { 
-        KMC = new KMC_poisson(2e-3, 1.0, 0, false, false);
+        KMC = new KMC_poisson(1e-2, 1.0, 0, false, false);
         RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTIONS, Input, KMC);
     }
     else
         RUN2 -> integrateLangevin(ATOMS, BOX, INTERACTIONS, Input);
+    */
+
+    run_style *RUN2 = new run_style(2, 10000, Input->dt, 10000, 10000, true, true, false);
+    KMC_poisson *KMC;
+
+    if(RUN2 -> kmc == true)
+    {
+        KMC = new KMC_poisson(1e-2, 1.0, 0, false, false);
+        RUN2 -> integrateBrownian(ATOMS, BOX, INTERACTIONS, Input, KMC);
+    }
+    else
+        RUN2 -> integrateBrownian(ATOMS, BOX, INTERACTIONS, Input);
 
     Input -> end = high_resolution_clock::now();
     printf("\n%s", program::returnElapsedTime(Input));

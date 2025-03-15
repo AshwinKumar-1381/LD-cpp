@@ -17,7 +17,7 @@ program::runNVE::runNVE(int id, float t, float delta_t, int thermo_val, int traj
 	traj_every = traj_val;
 	norm = norm_val;
 
-	maxSteps = ceil((time + 1.0)/dt);
+	maxSteps = ceil((time + dt)/dt);
 }
 
 void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input)
@@ -77,7 +77,7 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	zero = zero_val;
 	kmc = kmc_val;
 
-	maxSteps = ceil((time + 1.0)/dt);
+	maxSteps = ceil((time + dt)/dt);
 }
 
 void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
@@ -168,5 +168,87 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 			sprintf(KMC->dist_msd_tau->fpathO, "../Data%d/kmcDist.dat", Input->nr);
 			KMC -> dist_msd_tau -> write2file();
 		}
+	}
+}
+
+program::runBrownian::runBrownian(int id, float t, float delta_t, int thermo_val, int traj_val,
+	bool norm_val, bool zero_val, bool kmc_val)
+{
+	runID = id;
+	time = t;
+	dt = delta_t;
+	thermo_every = thermo_val;
+	traj_every = traj_val;
+	norm = norm_val;
+	zero = zero_val;
+	kmc = kmc_val;
+
+	maxSteps = ceil((time + dt)/dt);
+}
+
+void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
+{
+	int fac;
+	if(norm == true) fac = BOX->nAtoms;
+	else fac = 1;
+
+	if(kmc == true) 
+	{
+		if(KMC -> dist == true)
+			KMC -> initialize(Input, dt, ATOMS, BOX);
+		else
+			KMC -> initialize(Input, dt);
+	}
+
+	float c1 = sqrt(2.0*dt);
+
+	for(int step = 0; step <= maxSteps; step++)
+	{
+
+		if(step == 0)
+		{	
+		 	printf("\n--- Run %d ---\n", runID);
+		 	printf("\nstep pe ke etot temp\n");
+		}
+
+		if(step % thermo_every == 0)
+		{
+			printf("%d %f %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac, BOX->temp);
+			program::writeThermo(BOX, Input, runID, fac, step);
+		}
+
+		if(step % traj_every == 0) 
+			program::write2traj(ATOMS, Input, runID, step);
+		
+		if(kmc == true)
+		{
+			KMC -> Switch(ATOMS, BOX, Input, dt, step);
+			if(step % thermo_every == 0) 
+				program::writeKMC(KMC, Input, step);
+		} 
+		
+		BOX -> getBrownianForce(ATOMS, zero, step);
+
+		for(int i = 0; i < BOX->nAtoms; i++)
+		{
+			ATOMS[i].r2x = ATOMS[i].rx;
+			ATOMS[i].r2y = ATOMS[i].ry;
+		
+			ATOMS[i].rx = ATOMS[i].r2x + ATOMS[i].fx*dt + c1*ATOMS[i].bfx;
+			ATOMS[i].ry = ATOMS[i].r2y + ATOMS[i].fy*dt + c1*ATOMS[i].bfy;
+
+			if(ATOMS[i].r2x <= BOX->boxLength_x)
+				ATOMS[i].rx += ATOMS[i].Pe*dt;
+			else
+				ATOMS[i].ry += -1.0*ATOMS[i].Pe*dt;
+
+			ATOMS[i].px = (ATOMS[i].rx - ATOMS[i].r2x)/dt;
+			ATOMS[i].py = (ATOMS[i].ry - ATOMS[i].r2y)/dt;
+		}
+
+		BOX -> checkPBC(ATOMS);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
+		program::computeKineticEnergy(ATOMS, BOX);	
+		program::computeTemperature(BOX);
 	}
 }

@@ -13,7 +13,7 @@ namespace program{
 
 	void readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname);
 	void makeFolder(sysInput *Input);
-	void writeLog(sysInput *Input, SimBox *BOX, runLangevin *RUN, KMC_poisson* KMC);
+	void writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson* KMC);
 	void write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fname);
 	void writeFrame(atom_style *ATOMS, sysInput *Input, char *fname);
 	void writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int step);

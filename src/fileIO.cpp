@@ -46,7 +46,7 @@ void program::makeFolder(sysInput *Input)
     delete(fname);
 }
 
-void program::writeLog(sysInput *Input, SimBox *BOX, runLangevin *RUN, KMC_poisson* KMC)
+void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson* KMC)
 {
     char *fname = new char[50];
     sprintf(fname, "../Data%d/log.dat", Input->nr);

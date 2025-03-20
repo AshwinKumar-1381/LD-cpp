@@ -231,24 +231,26 @@ void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, int
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
+
 			ATOMS[i].r2x = ATOMS[i].rx;
 			ATOMS[i].r2y = ATOMS[i].ry;
 		
 			ATOMS[i].rx = ATOMS[i].r2x + ATOMS[i].fx*dt + c1*ATOMS[i].bfx;
 			ATOMS[i].ry = ATOMS[i].r2y + ATOMS[i].fy*dt + c1*ATOMS[i].bfy;
 
-			if(ATOMS[i].r2x <= BOX->boxLength_x)
+			if(ATOMS[i].r2x <= 0.5*BOX->boxLength_x)
 				ATOMS[i].rx += ATOMS[i].Pe*dt;
 			else
-				ATOMS[i].ry += -1.0*ATOMS[i].Pe*dt;
+				ATOMS[i].rx += -1.0*ATOMS[i].Pe*dt;
 
-			ATOMS[i].px = (ATOMS[i].rx - ATOMS[i].r2x)/dt;
-			ATOMS[i].py = (ATOMS[i].ry - ATOMS[i].r2y)/dt;
+			// ATOMS[i].px = (ATOMS[i].rx - ATOMS[i].r2x)/dt;
+			// ATOMS[i].py = (ATOMS[i].ry - ATOMS[i].r2y)/dt;
 		}
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
-		program::computeKineticEnergy(ATOMS, BOX);	
-		program::computeTemperature(BOX);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, true);
+
+		// program::computeKineticEnergy(ATOMS, BOX);	
+		// program::computeTemperature(BOX);
 	}
 }

@@ -81,10 +81,14 @@ void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson
         fprintf(log, "Pe_A = %f\n", Input->PeA);
         fprintf(log, "Pe_B = %f\n\n", Input->PeB);
 
-        fprintf(log, "KMC PARAMS\n\n");
-        fprintf(log, "lambda = %f\n", KMC->kmc_rate);
-        fprintf(log, "bias param = %f\n", KMC->bias);
+        if(KMC != NULL)
+        {
+            fprintf(log, "KMC PARAMS\n\n");
+            fprintf(log, "lambda = %f\n", KMC->kmc_rate);
+            fprintf(log, "bias param = %f\n", KMC->bias);
+        }
     }
+
     fclose(log);
     delete(fname);
 }

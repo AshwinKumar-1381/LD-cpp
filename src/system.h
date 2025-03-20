@@ -45,6 +45,7 @@ namespace program {
     void assignMomenta(atom_style *ATOMS);
     void assignProperties(atom_style *ATOMS, sysInput *Input, bool random = true);
     void getBrownianForce(atom_style *ATOMS, bool zero, int step);
+    void checkOverlaps(atom_style *ATOMS, sysInput *Input);
     };
 }
 

@@ -3,7 +3,7 @@
 #include "library.h"
 #include "compute.h"
 
-void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS)
+void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, bool overlaps)
 {
 	BOX->buildCellList(ATOMS);
 
@@ -37,6 +37,12 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, inter
 				int typej = ATOMS[jj].type;
 
 				float rcut = INTERACTIONS[typei][typej]->getrc();
+
+				if(overlaps == true)
+				{
+					if(r2ij <= 0.5*0.5*rcut*rcut)
+						printf("\nOverlap detected between atom %d and atom %d at squared-distance of %f\n", ii, jj, r2ij);
+				}
 
 				if(r2ij <= rcut*rcut)
 				{
@@ -92,6 +98,12 @@ void program::computeNonBondedInteractions(atom_style *ATOMS, SimBox *BOX, inter
 					int typej = ATOMS[jj].type;
 
 					float rcut = INTERACTIONS[typei][typej]->getrc();
+
+					if(overlaps == true)
+					{
+						if(r2ij <= 0.5*0.5*rcut*rcut)
+							printf("\nOverlap detected between atom %d and atom %d at squared-distance of %f\n", ii, jj, r2ij);
+					}
 
 					if(r2ij <= rcut*rcut)
 					{

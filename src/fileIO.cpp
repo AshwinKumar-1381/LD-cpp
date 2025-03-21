@@ -125,7 +125,7 @@ void program::writeFrame(atom_style *ATOMS, sysInput *Input, char *fname)
     fprintf(frame, "ID rx ry px py\n");
 
     for(int i = 0; i < Input->N; i++) 
-        fprintf(frame, "%c %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].px, ATOMS[i].py);
+        fprintf(frame, "%c %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].vx, ATOMS[i].vy);
 
     fclose(frame);
 }
@@ -193,7 +193,7 @@ void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step
     fprintf(traj, "Timestep %d\n", step);
 
     for(int i = 0; i < Input -> N; i++) 
-        fprintf(traj, "%c %f %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz, ATOMS[i].px, ATOMS[i].py);
+        fprintf(traj, "%c %f %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz, ATOMS[i].vx, ATOMS[i].vy);
 
     fclose(traj);
 }

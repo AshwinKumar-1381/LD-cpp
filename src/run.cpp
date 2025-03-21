@@ -26,6 +26,8 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
 
+	float d2t = 0.5*dt;
+
 	for(int step = 0; step <= maxSteps; step++)
 	{
 		if(step == 0)
@@ -40,33 +42,33 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 			program::writeThermo(BOX, Input, runID, fac, step);
 		}
 
-		float d2t = 0.5*dt;
-
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-			float dtm = float(dt/ATOMS[i].m);
+			float dt2m = float(0.5*dt/ATOMS[i].m);
 
-			ATOMS[i].p2x = ATOMS[i].px + d2t*ATOMS[i].fx;
-			ATOMS[i].p2y = ATOMS[i].py + d2t*ATOMS[i].fy;
+			ATOMS[i].v2x = ATOMS[i].vx + dt2m*ATOMS[i].fx;
+			ATOMS[i].v2y = ATOMS[i].vy + dt2m*ATOMS[i].fy;
 
-			ATOMS[i].rx = ATOMS[i].rx + dtm*ATOMS[i].p2x;
-			ATOMS[i].ry = ATOMS[i].ry + dtm*ATOMS[i].p2y;
+			ATOMS[i].rx = ATOMS[i].rx + dt*ATOMS[i].v2x;
+			ATOMS[i].ry = ATOMS[i].ry + dt*ATOMS[i].v2y;
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-			ATOMS[i].px = ATOMS[i].p2x + d2t*ATOMS[i].fx;
-			ATOMS[i].py = ATOMS[i].p2y + d2t*ATOMS[i].fy;
+			float dt2m = float(0.5*dt/ATOMS[i].m);
+
+			ATOMS[i].vx = ATOMS[i].v2x + dt2m*ATOMS[i].fx;
+			ATOMS[i].vy = ATOMS[i].v2y + dt2m*ATOMS[i].fy;
 		}
 
 		program::computeKineticEnergy(ATOMS, BOX);	
 	}
 }
 
-program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val)
+program::runLangevin_D::runLangevin_D(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val, float field_x)
 {
 	runID = id;
 	time = t;
@@ -76,11 +78,12 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	norm = norm_val;
 	zero = zero_val;
 	kmc = kmc_val;
+	field_loc_x = field_x;
 
 	maxSteps = ceil((time + dt)/dt);
 }
 
-void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
+void program::runLangevin_D::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
 {
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
@@ -95,10 +98,6 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 	}
 
 	float d2t = 0.5*dt;
-	float dtm = float(dt/ATOMS[0].m);
-	float c1 = exp(-1.0*dtm);
-	float c2 = sqrt(ATOMS[0].m*(1.0-c1*c1));
-	float c3 = ATOMS[0].m*(1.0 - c1);
 
 	for(int step = 0; step <= maxSteps; step++)
 	{
@@ -128,31 +127,35 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-			ATOMS[i].p2x = ATOMS[i].px + d2t*ATOMS[i].fx;
-			ATOMS[i].p2y = ATOMS[i].py + d2t*ATOMS[i].fy;
+			float dtm = float(dt/ATOMS[i].m);
+			float c1 = exp(-1.0*dtm);
+			float c2 = sqrt((1.0 - c1*c1)/ATOMS[i].m);
+			float c3 = 1.0 - c1;
+			
+			long sign_x = long((field_loc_x - ATOMS[i].rx)/abs(field_loc_x - ATOMS[i].rx));
 
-			ATOMS[i].r2x = ATOMS[i].rx + 0.5*dtm*ATOMS[i].p2x;
-			ATOMS[i].r2y = ATOMS[i].ry + 0.5*dtm*ATOMS[i].p2y;
+			ATOMS[i].v2x = ATOMS[i].vx + 0.5*dtm*ATOMS[i].fx;
+			ATOMS[i].v2y = ATOMS[i].vy + 0.5*dtm*ATOMS[i].fy;
 
-			ATOMS[i].p2x = ATOMS[i].p2x*c1 + ATOMS[i].bfx*c2;
-			ATOMS[i].p2y = ATOMS[i].p2y*c1 + ATOMS[i].bfy*c2;
+			ATOMS[i].r2x = ATOMS[i].rx + d2t*ATOMS[i].v2x;
+			ATOMS[i].r2y = ATOMS[i].ry + d2t*ATOMS[i].v2y;
 
-			if(ATOMS[i].rx <= 0.5*BOX->boxLength_x) 
-				ATOMS[i].p2x += 1.0*c3*ATOMS[i].Pe;
-			else 
-				ATOMS[i].p2x += -1.0*c3*ATOMS[i].Pe;
+			ATOMS[i].v2x = ATOMS[i].v2x*c1 + ATOMS[i].bfx*c2 + sign_x*ATOMS[i].Pe*c3;
+			ATOMS[i].v2y = ATOMS[i].v2y*c1 + ATOMS[i].bfy*c2;
 
-			ATOMS[i].rx = ATOMS[i].r2x + 0.5*dtm*ATOMS[i].p2x;
-			ATOMS[i].ry = ATOMS[i].r2y + 0.5*dtm*ATOMS[i].p2y;
+			ATOMS[i].rx = ATOMS[i].r2x + d2t*ATOMS[i].v2x;
+			ATOMS[i].ry = ATOMS[i].r2y + d2t*ATOMS[i].v2y;
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-			ATOMS[i].px = ATOMS[i].p2x + d2t*ATOMS[i].fx;
-			ATOMS[i].py = ATOMS[i].p2y + d2t*ATOMS[i].fy;
+			float dtm = float(dt/ATOMS[i].m);
+
+			ATOMS[i].vx = ATOMS[i].v2x + 0.5*dtm*ATOMS[i].fx;
+			ATOMS[i].vy = ATOMS[i].v2y + 0.5*dtm*ATOMS[i].fy;
 		}
 
 		program::computeKineticEnergy(ATOMS, BOX);	
@@ -172,7 +175,7 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 }
 
 program::runBrownian::runBrownian(int id, float t, float delta_t, int thermo_val, int traj_val,
-	bool norm_val, bool zero_val, bool kmc_val)
+	bool norm_val, bool zero_val, bool kmc_val, float field_x)
 {
 	runID = id;
 	time = t;
@@ -182,6 +185,7 @@ program::runBrownian::runBrownian(int id, float t, float delta_t, int thermo_val
 	norm = norm_val;
 	zero = zero_val;
 	kmc = kmc_val;
+	field_loc_x = field_x;
 
 	maxSteps = ceil((time + dt)/dt);
 }
@@ -231,26 +235,13 @@ void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, int
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-
-			ATOMS[i].r2x = ATOMS[i].rx;
-			ATOMS[i].r2y = ATOMS[i].ry;
+			long sign_x = long((field_loc_x - ATOMS[i].rx)/abs(field_loc_x - ATOMS[i].rx));
 		
-			ATOMS[i].rx = ATOMS[i].r2x + ATOMS[i].fx*dt + c1*ATOMS[i].bfx;
-			ATOMS[i].ry = ATOMS[i].r2y + ATOMS[i].fy*dt + c1*ATOMS[i].bfy;
-
-			if(ATOMS[i].r2x <= 0.5*BOX->boxLength_x)
-				ATOMS[i].rx += ATOMS[i].Pe*dt;
-			else
-				ATOMS[i].rx += -1.0*ATOMS[i].Pe*dt;
-
-			// ATOMS[i].px = (ATOMS[i].rx - ATOMS[i].r2x)/dt;
-			// ATOMS[i].py = (ATOMS[i].ry - ATOMS[i].r2y)/dt;
+			ATOMS[i].rx = ATOMS[i].rx + (ATOMS[i].fx + sign_x*ATOMS[i].Pe)*dt + c1*ATOMS[i].bfx;
+			ATOMS[i].ry = ATOMS[i].ry + ATOMS[i].fy*dt + c1*ATOMS[i].bfy;
 		}
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, true);
-
-		// program::computeKineticEnergy(ATOMS, BOX);	
-		// program::computeTemperature(BOX);
+		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 	}
 }

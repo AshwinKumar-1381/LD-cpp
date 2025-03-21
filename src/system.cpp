@@ -18,8 +18,8 @@ program::SimBox::SimBox(){
     ke = 0.0;
     pe = 0.0;
     etot = 0.0;
-    SPx = 0.0;
-    SPy = 0.0;
+    SVx = 0.0;
+    SVy = 0.0;
     temp = 0.0;
     
     rcell_x = 1.122462048;
@@ -59,7 +59,7 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***IN
         setRandomConfig(ATOMS);
         //setRandomRegionConfig(ATOMS, Input, 0.5*boxLength_x - 15.0, 0.5*boxLength_x + 15.0, 0.0, boxLength_y);
         assignProperties(ATOMS, Input, false);
-        assignMomenta(ATOMS);
+        assignVelocities(ATOMS);
     }
     
     program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
@@ -244,7 +244,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 
 		for(int i = 0; i < nAtoms; i++)
 		{
-			ATOMS[i].D = 1.0;
+			ATOMS[i].D = Input->D_str;
 			ATOMS[i].m = Input->m_str;
 		}
 	}
@@ -255,7 +255,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 		{
 			ATOMS[i].id = 'O';
 			ATOMS[i].type = 2;
-			ATOMS[i].Pe = Input -> PeB;
+			ATOMS[i].Pe = Input->PeB;
 			numB++;
 		}
 
@@ -263,13 +263,13 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 		{
 			ATOMS[i].id = 'N';
 			ATOMS[i].type = 1;
-			ATOMS[i].Pe = Input -> PeA;
+			ATOMS[i].Pe = Input->PeA;
 			numA++;
 		}
 
 		for(int i = 0; i < nAtoms; i++)
 		{
-			ATOMS[i].D = 1.0;
+			ATOMS[i].D = Input->D_str;
 			ATOMS[i].m = Input->m_str;
 		}
 	}
@@ -277,7 +277,7 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 	printf("Created %d atoms of type A and %d atoms of type B\n", numA, numB);
 }
 
-void program::SimBox::assignMomenta(atom_style *ATOMS)
+void program::SimBox::assignVelocities(atom_style *ATOMS)
 {
 	float gauss1, gauss2;
 	long idum;
@@ -286,19 +286,19 @@ void program::SimBox::assignMomenta(atom_style *ATOMS)
 	for(int i = 0; i < nAtoms; i++)
 	{
 		program::GAUSS(&gauss1, &gauss2, &idum);
-		ATOMS[i].px = sqrt(ATOMS[i].m)*gauss1;
-		ATOMS[i].py = sqrt(ATOMS[i].m)*gauss2;
+		ATOMS[i].vx = sqrt(1.0/ATOMS[i].m)*gauss1;
+		ATOMS[i].vy = sqrt(1.0/ATOMS[i].m)*gauss2;
 
-		SPx += ATOMS[i].px;
-		SPy += ATOMS[i].py;
+		SVx += ATOMS[i].vx;
+		SVy += ATOMS[i].vy;
 	}
 
 	for(int i = 0; i < nAtoms; i++)
 	{
-		ATOMS[i].px -= (SPx/nAtoms);
-		ATOMS[i].py -= (SPy/nAtoms);
+		ATOMS[i].vx -= (SVx/nAtoms);
+		ATOMS[i].vy -= (SVy/nAtoms);
 	}
-	printf("Assigned Momenta for %d atoms.\n", nAtoms);
+	printf("Assigned velocities for %d atoms.\n", nAtoms);
 }
 
 int program::SimBox::cellindex(int ix, int iy)

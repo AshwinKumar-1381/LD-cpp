@@ -29,7 +29,7 @@ namespace program{
         int nr;
         float dt;
         float L, S, pfrac;
-        float m_str, PR, PeA, PeB;
+        float m_str, D_str, PR, PeA, PeB;
         int N, nAtomTypes;
         time_point<high_resolution_clock> begin, end;
         

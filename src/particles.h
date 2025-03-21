@@ -15,8 +15,8 @@ namespace program{
     float xsave, ysave;
     float r2x, r2y;
     float dx, dy;
-    float px, py;
-    float p2x, p2y;
+    float vx, vy;
+    float v2x, v2y;
     float fx, fy;
     float bfx, bfy;
     int jumpx, jumpy;

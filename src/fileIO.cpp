@@ -78,6 +78,8 @@ void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson
         fprintf(log, "pfrac = %f\n", Input->pfrac);
         fprintf(log, "N = %d\n", Input->N);
         fprintf(log, "PR = %f\n", Input->PR);
+        fprintf(log, "m_str = %f\n", Input->m_str);
+        fprintf(log, "D_str = %f\n", Input->D_str);
         fprintf(log, "Pe_A = %f\n", Input->PeA);
         fprintf(log, "Pe_B = %f\n\n", Input->PeB);
 

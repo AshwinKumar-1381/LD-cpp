@@ -138,7 +138,7 @@ void program::computeKineticEnergy(atom_style *ATOMS, SimBox *BOX)
 	for(int i = 0; i < BOX->nAtoms; i++)
 	{
 		float ekin = ATOMS[i].vx*ATOMS[i].vx + ATOMS[i].vy*ATOMS[i].vy;
-		ekin *= ATOMS[i].m/2.0;
+		ekin *= 0.5*ATOMS[i].m;
 		BOX->ke += ekin; 
 	}
 

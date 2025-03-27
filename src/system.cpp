@@ -44,10 +44,6 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***IN
     boxLength_x = Input->L;
     boxLength_y = Input->S*boxLength_x;
     numFrac = Input->pfrac;
-
-    rcell_x = program::getmaxrc(INTERACTIONS, nAtomTypes);
-    rcell_y = rcell_x;
-    buildCellMaps();
     
     if(fname != NULL)
     {
@@ -61,8 +57,16 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***IN
         assignProperties(ATOMS, Input, false);
         assignVelocities(ATOMS);
     }
+
+    if(INTERACTIONS != NULL)
+    {
+    	rcell_x = program::getmaxrc(INTERACTIONS, nAtomTypes);
+    	rcell_y = rcell_x;
+    	buildCellMaps();
     
-    program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);
+    	program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS);	
+    }
+    
     program::computeKineticEnergy(ATOMS, BOX);
     program::computeTemperature(BOX);
 }

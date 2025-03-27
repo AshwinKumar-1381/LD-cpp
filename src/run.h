@@ -28,7 +28,7 @@ namespace program{
 		void integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input); 
 	};
 
-	typedef class runLangevin_D{
+	typedef class runLangevin{
 
 		public:
 
@@ -38,10 +38,11 @@ namespace program{
 		bool norm, zero, kmc;
 		float field_loc_x; 
 
-		runLangevin_D(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false, float field_loc_x = 0.0);
-		~runLangevin_D();
+		runLangevin(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false, float field_loc_x = 0.0);
+		~runLangevin();
 
 		void integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC = NULL);
+		
 	}run_style;
 
 	typedef class runBrownian{

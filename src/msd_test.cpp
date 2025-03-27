@@ -15,17 +15,13 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr         = 273;
-    Input -> nAtomTypes = 2;
+    Input -> nr         = 278;
     Input -> m_str      = 1.0;
-    Input -> D_str      = 1e-3;
-    Input -> dt         = 5e-4;
-    Input -> pfrac      = 0.5;
-    Input -> L          = 50.0;
+    Input -> D_str      = 1.0;
+    Input -> dt         = 5e-5;
+    Input -> pfrac      = 0.1;
+    Input -> L          = 100.0;
     Input -> S          = 1.0;
-    Input -> PR         = 0.0;
-    Input -> PeA        = -0.0;
-    Input -> PeB        = +0.0;
 
     program::simulation(Input);
     return(0);     
@@ -39,19 +35,12 @@ void program::simulation(sysInput *Input)
 
     SimBox *BOX = new SimBox;
     atom_style *ATOMS = new atom_style[Input->N];
-    
-    interactions ***INTERACTIONS = program::createInteractions(Input->nAtomTypes);
-    INTERACTIONS[1][1] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[2][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-    INTERACTIONS[1][2] = new interactions("WCA_2P", {1.0, 1.0, 1.122462048});
-
-    program::mirrorInteractions(INTERACTIONS, Input->nAtomTypes);
 
 #ifdef INIT_CONFIG_FILE
     char *init_fname = {INIT_CONFIG_FILE};
-    BOX -> initBox(ATOMS, BOX, INTERACTIONS, Input, init_fname); 
+    BOX -> initBox(ATOMS, BOX, NULL, Input, init_fname); 
 #else
-    BOX -> initBox(ATOMS, BOX, INTERACTIONS, Input);
+    BOX -> initBox(ATOMS, BOX, NULL, Input);
 #endif
 
     char *fname = new char[50];
@@ -66,27 +55,17 @@ void program::simulation(sysInput *Input)
 
     // runNVE params - runID time dt thermo_every traj_every norm 
     // runLangevin params - runID time dt thermo_every traj_every norm zero kmc field_x
-    // runBrownian params - runID time dt thermo_every traj_every norm zero kmc
-    // runKMC params - rate bias delay verbose dist
 
     runNVE *RUN1 = new runNVE(1, 1, Input->dt, 10000, 10000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, NULL, Input);
     
-    run_style *RUN2 = new run_style(2, 10000, Input->dt, 10000, 10000, true, true, false, 0.5*BOX->boxLength_x);
-    KMC_poisson *KMC;
-    
-    if(RUN2 -> kmc == true)
-    { 
-        KMC = new KMC_poisson(1e-2, 1.0, 0, false, false);
-        RUN2 -> integrateLangevin(ATOMS, BOX, NULL, Input, KMC);
-    }
-    else
-        RUN2 -> integrateLangevin(ATOMS, BOX, NULL, Input);
+    run_style *RUN2 = new run_style(2, 10000, Input->dt, 200000, 200000, true, true, false, 0.5*BOX->boxLength_x);
+    RUN2 -> integrateLangevin(ATOMS, BOX, NULL, Input);
 
     Input -> end = high_resolution_clock::now();
     printf("\n%s", program::returnElapsedTime(Input));
 
-    program::writeLog(Input, BOX, RUN2, KMC);
+    program::writeLog(Input, BOX, RUN2);
 
     delete[] ATOMS;
     delete BOX;

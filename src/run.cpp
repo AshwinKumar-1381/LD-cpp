@@ -54,7 +54,9 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
+
+		if(INTERACTIONS != NULL)
+			program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -68,7 +70,7 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 	}
 }
 
-program::runLangevin_D::runLangevin_D(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val, float field_x)
+program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val, float field_x)
 {
 	runID = id;
 	time = t;
@@ -83,7 +85,7 @@ program::runLangevin_D::runLangevin_D(int id, float t, float delta_t, int thermo
 	maxSteps = ceil((time + dt)/dt);
 }
 
-void program::runLangevin_D::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
+void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
 {
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
@@ -128,7 +130,7 @@ void program::runLangevin_D::integrateLangevin(atom_style *ATOMS, SimBox *BOX, i
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
 			float dtm = float(dt/ATOMS[i].m);
-			float c1 = exp(-1.0*dtm);
+			float c1 = exp(-1.0*dtm/ATOMS[i].D);
 			float c2 = sqrt((1.0 - c1*c1)/ATOMS[i].m);
 			float c3 = 1.0 - c1;
 			
@@ -148,7 +150,9 @@ void program::runLangevin_D::integrateLangevin(atom_style *ATOMS, SimBox *BOX, i
 		}	
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
+
+		if(INTERACTIONS != NULL)
+			program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -242,6 +246,8 @@ void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, int
 		}
 
 		BOX -> checkPBC(ATOMS);
-		program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
+
+		if(INTERACTIONS != NULL)
+			program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
 	}
 }

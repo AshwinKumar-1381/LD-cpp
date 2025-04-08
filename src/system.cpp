@@ -391,3 +391,24 @@ void program::SimBox::getBrownianForce(atom_style *ATOMS, bool zero, int step)
 		}
 	}
 }
+
+void program::SimBox::slice(atom_style *ATOMS, float slice_x, float slice_y)
+{
+	if(slice_x == 0.0)
+	{
+		for(int i = 0; i < nAtoms; i++)
+		{
+			if(ATOMS[i].ry <= slice_y) ATOMS[i].id = 'N';
+			else if(ATOMS[i].ry >= slice_y) ATOMS[i].id = 'O';	
+		}
+	}
+
+	else if(slice_y == 0.0)
+	{
+		for(int i = 0; i < nAtoms; i++)
+		{
+			if(ATOMS[i].rx <= slice_x) ATOMS[i].id = 'N';
+			else if(ATOMS[i].rx >= slice_x) ATOMS[i].id = 'O';	
+		}
+	}
+}

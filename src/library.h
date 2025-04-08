@@ -31,6 +31,7 @@ namespace program{
         float L, S, pfrac;
         float m_str, D_str, PR, PeA, PeB;
         int N, nAtomTypes;
+        char *folder = new char[50];
         time_point<high_resolution_clock> begin, end;
         
     };

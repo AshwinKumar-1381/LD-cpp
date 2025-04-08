@@ -1,9 +1,16 @@
 # Makefile for the in-house Langevin Dynamics C++ code
 
-msd: msd_test.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp
-	g++ -w msd_test.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp -o msd_test 
-	./msd_test
+CC = g++
+CFLAGS = -w -std=c++17
 
-lanes:
+msd_test: msd_test.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp
+	$(CC) $(CFLAGS) msd_test.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp -o msd_test.o 
 
-biphasic:
+biphasic: main.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp
+	$(CC) $(CFLAGS) main.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp -o biphasic.o
+
+lane: lane.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp
+	$(CC) $(CFLAGS) lane.cpp fileIO.cpp particles.cpp run.cpp compute.cpp kmc.cpp random.cpp interactions.cpp system.cpp -o lane.o
+
+clean:
+	rm *.o 

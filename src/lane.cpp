@@ -15,18 +15,18 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    sprintf(Input -> folder, ".");
-    Input -> nr         = 71;
+    sprintf(Input -> folder, "lane");
+    Input -> nr         = 11;
     Input -> nAtomTypes = 2;
-    Input -> m_str      = 1.0e-3;
-    Input -> D_str      = 1.0;
-    Input -> dt         = 1e-4;
-    Input -> pfrac      = 0.5;
-    Input -> L          = 200.0;
-    Input -> S          = 0.25;
+    Input -> m_str      = 1.0;
+    Input -> D_str      = 1.0e-3;
+    Input -> dt         = 5e-4;
+    Input -> pfrac      = 0.45;
+    Input -> L          = 150.0;
+    Input -> S          = 0.2;
     Input -> PR         = 0.0;
-    Input -> PeA        = -0.0;
-    Input -> PeB        = +1.0;
+    Input -> PeA        = -90.0;
+    Input -> PeB        = +90.0;
 
     program::simulation(Input);
     return(0);     
@@ -70,10 +70,12 @@ void program::simulation(sysInput *Input)
     // runBrownian params - runID time dt thermo_every traj_every norm zero kmc
     // runKMC params - rate bias delay verbose dist
 
-    runNVE *RUN1 = new runNVE(1, 1000, Input->dt, 10000, 10000, true);
+    runNVE *RUN1 = new runNVE(1, 2000, Input->dt, 10000, 10000, true);
     RUN1 -> integrateNVE(ATOMS, BOX, INTERACTIONS, Input);
+
+    BOX -> slice(ATOMS, 0.0, 0.5*BOX->boxLength_y);
     
-    run_style *RUN2 = new run_style(2, 25000, Input->dt, 10000, 10000, true, true, true, 0.5*BOX->boxLength_x);
+    run_style *RUN2 = new run_style(2, 40000, Input->dt, 1000, 1000, true, true, false, 1.0*BOX->boxLength_x);
     KMC_poisson *KMC;
     
     if(RUN2 -> kmc == true)

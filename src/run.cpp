@@ -133,8 +133,10 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 			float c1 = exp(-1.0*dtm/ATOMS[i].D);
 			float c2 = sqrt((1.0 - c1*c1)/ATOMS[i].m);
 			float c3 = 1.0 - c1;
-			
-			long sign_x = long((field_loc_x - ATOMS[i].rx)/abs(field_loc_x - ATOMS[i].rx));
+
+			int sign_x;
+			if(field_loc_x < ATOMS[i].rx) sign_x = -1;
+			else sign_x = 1;
 
 			ATOMS[i].v2x = ATOMS[i].vx + 0.5*dtm*ATOMS[i].fx;
 			ATOMS[i].v2y = ATOMS[i].vy + 0.5*dtm*ATOMS[i].fy;

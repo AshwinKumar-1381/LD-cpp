@@ -36,7 +36,7 @@ void program::makeFolder(sysInput *Input)
 {
     char *cmd = new char[50];
     char *fname = new char[50];
-    sprintf(fname, "../Data%d", Input->nr);
+    sprintf(fname, "../%s/Data%d", Input->folder, Input->nr);
 
     sprintf(cmd, "rm -r %s", fname);
     std::system(cmd);
@@ -49,7 +49,7 @@ void program::makeFolder(sysInput *Input)
 void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson* KMC)
 {
     char *fname = new char[50];
-    sprintf(fname, "../Data%d/log.dat", Input->nr);
+    sprintf(fname, "../%s/Data%d/log.dat", Input->folder, Input->nr);
     remove(fname);
 
     FILE *log = fopen(fname, "w");
@@ -136,7 +136,7 @@ void program::writeThermo(SimBox *BOX, sysInput *Input, int runID, int fac, int 
 {
     char *fname = new char[500];
     FILE *thermo;
-    sprintf(fname, "../Data%d/thermo%d.dat", Input->nr, runID);
+    sprintf(fname, "../%s/Data%d/thermo%d.dat", Input->folder, Input->nr, runID);
 
     if(step == 0)
     {
@@ -168,7 +168,7 @@ void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step
 {
     char *fname = new char[500];
     FILE *traj;
-    sprintf(fname, "../Data%d/traj%d.xyz", Input->nr, runID);
+    sprintf(fname, "../%s/Data%d/traj%d.xyz", Input->folder, Input->nr, runID);
 
     if(step == 0)
     {
@@ -204,12 +204,12 @@ void program::writeKMC(KMC_poisson *KMC, sysInput *Input, int step)
 {
     char *fname = new char[500];
     FILE *file;
-    sprintf(fname, "../Data%d/kmc.dat", Input->nr);
+    sprintf(fname, "../%s/Data%d/kmc.dat", Input->folder, Input->nr);
 
     if(step == 0)
     {
         char *fname2 = new char[500];
-        sprintf(fname2, "../Data%d/kmc_switch_times.dat", Input->nr);
+        sprintf(fname2, "../%s/Data%d/kmc_switch_times.dat", Input->folder, Input->nr);
         remove(fname2);
 
         file = fopen(fname2, "w");

@@ -15,11 +15,11 @@ int main(int argc, char *argv[])
 {
     program::sysInput *Input = new sysInput;
 
-    Input -> nr         = 278;
+    Input -> nr         = 276;
     Input -> m_str      = 1.0;
-    Input -> D_str      = 1.0;
+    Input -> D_str      = 0.1;
     Input -> dt         = 5e-5;
-    Input -> pfrac      = 0.1;
+    Input -> pfrac      = 0.5;
     Input -> L          = 100.0;
     Input -> S          = 1.0;
 

@@ -107,6 +107,9 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 		{	
 		 	printf("\n--- Run %d ---\n", runID);
 		 	printf("\nstep pe ke etot temp\n");
+
+		 	if(INTERACTIONS != NULL)
+		 		BOX -> addForce_x(ATOMS, field_loc_x);
 		}
 
 		if(step % thermo_every == 0)
@@ -132,11 +135,6 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 			float dtm = float(dt/ATOMS[i].m);
 			float c1 = exp(-1.0*dtm/ATOMS[i].D);
 			float c2 = sqrt((1.0 - c1*c1)/ATOMS[i].m);
-			float c3 = 1.0 - c1;
-
-			int sign_x;
-			if(field_loc_x < ATOMS[i].rx) sign_x = -1;
-			else sign_x = 1;
 
 			ATOMS[i].v2x = ATOMS[i].vx + 0.5*dtm*ATOMS[i].fx;
 			ATOMS[i].v2y = ATOMS[i].vy + 0.5*dtm*ATOMS[i].fy;
@@ -144,7 +142,7 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 			ATOMS[i].r2x = ATOMS[i].rx + d2t*ATOMS[i].v2x;
 			ATOMS[i].r2y = ATOMS[i].ry + d2t*ATOMS[i].v2y;
 
-			ATOMS[i].v2x = ATOMS[i].v2x*c1 + ATOMS[i].bfx*c2 + sign_x*ATOMS[i].Pe*c3;
+			ATOMS[i].v2x = ATOMS[i].v2x*c1 + ATOMS[i].bfx*c2;
 			ATOMS[i].v2y = ATOMS[i].v2y*c1 + ATOMS[i].bfy*c2;
 
 			ATOMS[i].rx = ATOMS[i].r2x + d2t*ATOMS[i].v2x;
@@ -154,7 +152,10 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 		BOX -> checkPBC(ATOMS);
 
 		if(INTERACTIONS != NULL)
+		{
 			program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
+			BOX -> addForce_x(ATOMS, field_loc_x);
+		}
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -219,6 +220,9 @@ void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, int
 		{	
 		 	printf("\n--- Run %d ---\n", runID);
 		 	printf("\nstep pe ke etot temp\n");
+
+		 	if(INTERACTIONS != NULL)
+		 		BOX -> addForce_x(ATOMS, field_loc_x);
 		}
 
 		if(step % thermo_every == 0)
@@ -241,15 +245,16 @@ void program::runBrownian::integrateBrownian(atom_style *ATOMS, SimBox *BOX, int
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
-			long sign_x = long((field_loc_x - ATOMS[i].rx)/abs(field_loc_x - ATOMS[i].rx));
-		
-			ATOMS[i].rx = ATOMS[i].rx + (ATOMS[i].fx + sign_x*ATOMS[i].Pe)*dt + c1*ATOMS[i].bfx;
+			ATOMS[i].rx = ATOMS[i].rx + ATOMS[i].fx*dt + c1*ATOMS[i].bfx;
 			ATOMS[i].ry = ATOMS[i].ry + ATOMS[i].fy*dt + c1*ATOMS[i].bfy;
 		}
 
 		BOX -> checkPBC(ATOMS);
 
 		if(INTERACTIONS != NULL)
+		{
 			program::computeNonBondedInteractions(ATOMS, BOX, INTERACTIONS, false);
+			BOX -> addForce_x(ATOMS, field_loc_x);
+		}
 	}
 }

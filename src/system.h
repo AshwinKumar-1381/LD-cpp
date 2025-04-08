@@ -45,6 +45,7 @@ namespace program {
     void assignVelocities(atom_style *ATOMS);
     void assignProperties(atom_style *ATOMS, sysInput *Input, bool random = true);
     void getBrownianForce(atom_style *ATOMS, bool zero, int step);
+    void addForce_x(atom_style *ATOMS, float field_loc_x = 0.0);
     void slice(atom_style *ATOMS, float slice_x = 0.0, float slice_y = 0.0);
 
     };

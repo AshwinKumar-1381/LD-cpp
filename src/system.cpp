@@ -392,6 +392,18 @@ void program::SimBox::getBrownianForce(atom_style *ATOMS, bool zero, int step)
 	}
 }
 
+void program::SimBox::addForce_x(atom_style *ATOMS, float field_loc_x)
+{
+	int sign_x;
+	for(int i = 0; i < nAtoms; i++)
+	{
+		if(field_loc_x < ATOMS[i].rx) sign_x = -1;
+		else sign_x = 1;
+
+		ATOMS[i].fx += sign_x * ATOMS[i].Pe;
+	}
+}
+
 void program::SimBox::slice(atom_style *ATOMS, float slice_x, float slice_y)
 {
 	if(slice_x == 0.0)

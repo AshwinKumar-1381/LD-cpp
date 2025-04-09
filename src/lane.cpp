@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     Input -> pfrac      = 0.45;
     Input -> L          = 150.0;
     Input -> S          = 0.2;
-    Input -> PR         = 0.0;
+    Input -> PR         = 0.5;
     Input -> PeA        = -40.0;
     Input -> PeB        = +40.0;
 

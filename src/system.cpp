@@ -307,10 +307,10 @@ void program::SimBox::assignVelocities(atom_style *ATOMS)
 
 int program::SimBox::cellindex(int ix, int iy)
 {   
-    if (ix == Ncell_x) ix = 0; 
-	else if (ix==-1) ix = Ncell_x - 1; 
-	if (iy == Ncell_y) iy = 0;
-	else if (iy == -1) iy = Ncell_y - 1;
+    if (ix >= Ncell_x) ix = ix - Ncell_x; 
+	else if (ix <= -1) ix = ix + Ncell_x; 
+	if (iy >= Ncell_y) iy = iy - Ncell_y;
+	else if (iy <= -1) iy = iy + Ncell_y;
 
 	if(Ncell_x >= Ncell_y)
 		return (1 + ix + iy*Ncell_x);

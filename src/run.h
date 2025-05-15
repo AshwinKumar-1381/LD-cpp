@@ -15,14 +15,14 @@ namespace program{
 		public:
 
 		int runID;
+		char *name;
 		float time;
 		float dt;
-		int thermo_every;
-		int traj_every;
+		int thermo_every, traj_every, maxSteps;
+		int res_step = 0;
 		bool norm;
-		int maxSteps;
-
-		runNVE(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true);
+		
+		runNVE(int id = 1, char run_name[50] = "", float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true);
 		~runNVE();
 
 		void integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input); 
@@ -33,12 +33,14 @@ namespace program{
 		public:
 
 		int runID;
+		char *name;
 		float time, dt;
 		int thermo_every, traj_every, maxSteps;
+		int res_step = 0;
 		bool norm, zero, kmc;
 		float field_loc_x; 
 
-		runLangevin(int id = 1, float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false, float field_loc_x = 0.0);
+		runLangevin(int id = 1, char run_name[50] = "", float t = 1.0, float delta_t = 1.0, int thermo_val = 1, int traj_val = 1, bool norm_val = true, bool zero_val = true, bool kmc_val = false, float field_loc_x = 0.0);
 		~runLangevin();
 
 		void integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC = NULL);

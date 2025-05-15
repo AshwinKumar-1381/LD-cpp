@@ -8,16 +8,17 @@
 
 using namespace program;
 
-program::runNVE::runNVE(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val)
+program::runNVE::runNVE(int id, char run_name[50], float t, float delta_t, int thermo_val, int traj_val, bool norm_val)
 {
 	runID = id;
+	name = {run_name};
 	time = t;
 	dt = delta_t;
 	thermo_every = thermo_val;
 	traj_every = traj_val;
 	norm = norm_val;
 
-	maxSteps = ceil((time + dt)/dt);
+	maxSteps = ceil(time/dt);
 }
 
 void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input)
@@ -32,7 +33,7 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 	{
 		if(step == 0)
 		{	
-		 	printf("\n--- Run %d ---\n", runID);
+		 	printf("\n--- %s ---\n", name);
 		 	printf("\nstep pe ke etot\n");
 		}
 
@@ -41,6 +42,9 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 			printf("%d %f %f %f\n", step, BOX->pe/fac, BOX->ke/fac, BOX->etot/fac);
 			program::writeThermo(BOX, Input, runID, fac, step);
 		}
+
+		if(step % traj_every == 0) 
+			program::write2traj(ATOMS, Input, runID, step);
 
 		for(int i = 0; i < BOX->nAtoms; i++)
 		{
@@ -70,9 +74,10 @@ void program::runNVE::integrateNVE(atom_style *ATOMS, SimBox *BOX, interactions 
 	}
 }
 
-program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val, float field_x)
+program::runLangevin::runLangevin(int id, char run_name[50], float t, float delta_t, int thermo_val, int traj_val, bool norm_val, bool zero_val, bool kmc_val, float field_x)
 {
 	runID = id;
+	name = {run_name};
 	time = t;
 	dt = delta_t;
 	thermo_every = thermo_val;
@@ -82,7 +87,7 @@ program::runLangevin::runLangevin(int id, float t, float delta_t, int thermo_val
 	kmc = kmc_val;
 	field_loc_x = field_x;
 
-	maxSteps = ceil((time + dt)/dt);
+	maxSteps = ceil(time/dt);
 }
 
 void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, interactions ***INTERACTIONS, sysInput *Input, KMC_poisson *KMC)
@@ -90,6 +95,12 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 	int fac;
 	if(norm == true) fac = BOX->nAtoms;
 	else fac = 1;
+
+	if(Input->restart == true)
+	{
+		this->res_step = Input->res_step;
+		maxSteps += res_step;
+	}
 
 	if(kmc == true) 
 	{
@@ -101,11 +112,11 @@ void program::runLangevin::integrateLangevin(atom_style *ATOMS, SimBox *BOX, int
 
 	float d2t = 0.5*dt;
 
-	for(int step = 0; step <= maxSteps; step++)
+	for(int step = res_step; step <= maxSteps; step++)
 	{
-		if(step == 0)
+		if(step == res_step)
 		{	
-		 	printf("\n--- Run %d ---\n", runID);
+		 	printf("\n--- %s ---\n", name);
 		 	printf("\nstep pe ke etot temp\n");
 
 		 	if(INTERACTIONS != NULL)

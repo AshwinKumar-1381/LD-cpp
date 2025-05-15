@@ -5,7 +5,7 @@
 
 using namespace program;
 
-void program::readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname)
+void program::readConfigFile(atom_style *ATOMS, SimBox *BOX, sysInput *Input, char *fname)
 {
     char *pipeString = new char[500];
     FILE *initFile = fopen(fname, "r");
@@ -17,39 +17,56 @@ void program::readConfigFile(atom_style *ATOMS, SimBox *BOX, char *fname)
     }
     else
     {
+        int nAtoms;
+
         fgets(pipeString, 500, initFile);
-        
-        for(int i = 0; i < BOX->nAtoms; i++)
+        sscanf(pipeString, "%d %*s", &nAtoms);
+
+        if(nAtoms == BOX->nAtoms)
         {
             fgets(pipeString, 500, initFile);
-            sscanf(pipeString, "%c %f %f %f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry, &ATOMS[i].rz);
-        }   
-    }
-    
-    fclose(initFile);
-    delete(pipeString);
+            sscanf(pipeString, "%*s %d", &Input->res_step);
+        
+            for(int i = 0; i < BOX->nAtoms; i++)
+            {
+                fgets(pipeString, 500, initFile);
+                sscanf(pipeString, "%c %f %f %f %f %f", &ATOMS[i].id, &ATOMS[i].rx, &ATOMS[i].ry, &ATOMS[i].rz, &ATOMS[i].vx, &ATOMS[i].vy);
+            }  
 
-    printf("Read configurations for %d atoms from %s.\n", BOX->nAtoms, fname);
+            fclose(initFile);
+            delete(pipeString);
+
+            printf("Read configurations for %d atoms from %s.\n", BOX->nAtoms, fname);  
+        }
+        else
+        {
+            printf("Error: Atom count mismatch between initial config. file and input script. Exiting...\n");
+            exit(-1);
+        }
+    }
 }
 
 void program::makeFolder(sysInput *Input)
 {
-    char *cmd = new char[50];
-    char *fname = new char[50];
-    sprintf(fname, "../%s/Data%d", Input->folder, Input->nr);
+    if(Input->restart == false)
+    {
+        char *cmd = new char[50];
+        char *fname = new char[50];
+        sprintf(fname, "../%s/Data%d", Input->folder, Input->nr);
 
-    sprintf(cmd, "rm -r %s", fname);
-    std::system(cmd);
-    sprintf(cmd, "mkdir %s", fname);
-    std::system(cmd);
-    delete(cmd);
-    delete(fname);
+        sprintf(cmd, "rm -r %s", fname);
+        std::system(cmd);
+        sprintf(cmd, "mkdir -p %s/frames", fname);
+        std::system(cmd);
+        delete(cmd);
+        delete(fname);
+    }
 }
 
 void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson* KMC)
 {
     char *fname = new char[50];
-    sprintf(fname, "../%s/Data%d/log.dat", Input->folder, Input->nr);
+    sprintf(fname, "../%s/Data%d/log%s.dat", Input->folder, Input->nr, RUN->name);
     remove(fname);
 
     FILE *log = fopen(fname, "w");
@@ -66,11 +83,13 @@ void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson
         fprintf(log, "RUN PARAMS\n\n");
         fprintf(log, "Start Time : %s", ctime(&startTime));
         fprintf(log, "End Time : %s", ctime(&endTime));
+
         fprintf(log, "%s\n", program::returnElapsedTime(Input));
         fprintf(log, "nr = %d\n", Input->nr);
-        fprintf(log, "Run%d time = %f\n", RUN->runID, RUN->time);
+        fprintf(log, "Name : %s\n", RUN->name);
+        fprintf(log, "Total time = %f\n", RUN->time);
         fprintf(log, "dt = %f\n", RUN->dt);
-        fprintf(log, "Nsteps = %d\n\n", RUN->maxSteps);
+        fprintf(log, "Nsteps = %d\n\n", RUN->maxSteps - RUN->res_step);
 
         fprintf(log, "SIM PARAMS\n\n");
         fprintf(log, "Lx = %f\n", BOX->boxLength_x);
@@ -95,7 +114,7 @@ void program::writeLog(sysInput *Input, SimBox *BOX, run_style *RUN, KMC_poisson
     delete(fname);
 }
 
-void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fname)
+void program::write2xyz(atom_style *ATOMS, sysInput *Input, long step, char *fname)
 {
     remove(fname);
     FILE *traj = fopen(fname, "w");
@@ -106,7 +125,7 @@ void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fn
     }
 
     fprintf(traj, "%d\n", Input->N);
-    fprintf(traj, "Timestep %f\n", step);
+    fprintf(traj, " Atoms. Timestep: %ld\n", step);
 
     for(int i = 0; i < Input->N; i++) 
         fprintf(traj, "%c %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz);
@@ -114,7 +133,7 @@ void program::write2xyz(atom_style *ATOMS, sysInput *Input, float step, char *fn
     fclose(traj);
 }
 
-void program::writeFrame(atom_style *ATOMS, sysInput *Input, char *fname)
+void program::writeFrame(atom_style *ATOMS, sysInput *Input, long step, char *fname)
 {
     remove(fname);
     FILE *frame = fopen(fname, "a+");
@@ -124,10 +143,12 @@ void program::writeFrame(atom_style *ATOMS, sysInput *Input, char *fname)
         exit(-1);
     }
 
-    fprintf(frame, "ID rx ry px py\n");
+    fprintf(frame, "%d Atoms\n", Input->N);
+    fprintf(frame, "Timestep: %ld\n", step);
+    fprintf(frame, "ID rx ry rz vx vy\n");
 
     for(int i = 0; i < Input->N; i++) 
-        fprintf(frame, "%c %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].vx, ATOMS[i].vy);
+        fprintf(frame, "%c %f %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz, ATOMS[i].vx, ATOMS[i].vy);
 
     fclose(frame);
 }
@@ -192,7 +213,7 @@ void program::write2traj(atom_style *ATOMS, sysInput *Input, int runID, int step
     }
 
     fprintf(traj, "%d\n", Input->N);
-    fprintf(traj, "Timestep %d\n", step);
+    fprintf(traj, " Atoms. Timestep: %d\n", step);
 
     for(int i = 0; i < Input -> N; i++) 
         fprintf(traj, "%c %f %f %f %f %f\n", ATOMS[i].id, ATOMS[i].rx, ATOMS[i].ry, ATOMS[i].rz, ATOMS[i].vx, ATOMS[i].vy);

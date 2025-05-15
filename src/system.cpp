@@ -47,8 +47,8 @@ void program::SimBox::initBox(atom_style *ATOMS, SimBox *BOX, interactions ***IN
     
     if(fname != NULL)
     {
-    	program::readConfigFile(ATOMS, BOX, fname);
-    	assignProperties(ATOMS, Input);
+    	program::readConfigFile(ATOMS, BOX, Input, fname);
+    	assignProperties(ATOMS, Input, false);
     }
     else 
     {
@@ -245,12 +245,6 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 
 			if(accept == 1) i++;
 		}
-
-		for(int i = 0; i < nAtoms; i++)
-		{
-			ATOMS[i].D = Input->D_str;
-			ATOMS[i].m = Input->m_str;
-		}
 	}
 
 	else
@@ -270,12 +264,12 @@ void program::SimBox::assignProperties(atom_style *ATOMS, sysInput *Input, bool 
 			ATOMS[i].Pe = Input->PeA;
 			numA++;
 		}
+	}
 
-		for(int i = 0; i < nAtoms; i++)
-		{
-			ATOMS[i].D = Input->D_str;
-			ATOMS[i].m = Input->m_str;
-		}
+	for(int i = 0; i < nAtoms; i++)
+	{
+		ATOMS[i].D = Input->D_str;
+		ATOMS[i].m = Input->m_str;
 	}
 	
 	printf("Created %d atoms of type A and %d atoms of type B\n", numA, numB);

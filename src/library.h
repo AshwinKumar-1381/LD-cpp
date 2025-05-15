@@ -32,6 +32,8 @@ namespace program{
         float m_str, D_str, PR, PeA, PeB;
         int N, nAtomTypes;
         char *folder = new char[50];
+        bool restart = false;
+        int res_step = 0;
         time_point<high_resolution_clock> begin, end;
         
     };
